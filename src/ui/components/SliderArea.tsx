@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "@ui/components/SliderArea.scss"
-import { Slider, Typography } from "antd";
+import { Slider, Typography, Tooltip } from "antd";
 import { InfoCircleTwoTone, InfoCircleOutlined } from "@ant-design/icons";
 import { SliderSingleProps } from "antd";
 
@@ -17,10 +17,18 @@ function SliderArea() {
 
     return (
     <div className="sliderContainer">
-        <Text>AI视野范围 <InfoCircleOutlined style={{color: '#444444'}} /></Text>
+        <Text>AI视野范围 
+            <Tooltip title="待定的说明文字" placement="top">
+                <InfoCircleOutlined style={{color: '#444444'}} />
+            </Tooltip>
+        </Text>
         <Slider defaultValue={2} max={3} min={1} marks={marks} disabled={disabled} />
 
-        <Text>AI记忆范围 <InfoCircleOutlined style={{color: '#444444'}} /></Text>
+        <Text>AI记忆范围 
+            <Tooltip title="待定的说明文字" placement="top">
+                <InfoCircleOutlined style={{color: '#444444'}} />
+            </Tooltip>
+        </Text>
         <Slider defaultValue={2} max={3} min={1} marks={marks} disabled={disabled} />
     </div>
     );
