@@ -1,0 +1,18 @@
+.inputArea {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    z-index: 999;
+
+    .ant-segmented, .ant-input, .ant-btn {
+        border-radius: 0;
+    }
+
+    .ant-segmented-item-label {
+        display: flex;
+        align-items: center;
+    }
+}
