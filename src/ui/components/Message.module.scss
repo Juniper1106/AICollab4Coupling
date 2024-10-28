@@ -1,0 +1,31 @@
+.message-sent {
+    // max-width: 100%;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #F9F9F9;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #E3E3E3;
+    display: flex;
+    flex-direction: column;
+}
+  
+.message-received {
+    // max-width: 100%;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #E5F5FE;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #91CCFC;
+    display: flex;
+    flex-direction: column;
+}
+
+.text {
+    word-break: break-all;       /* 在任意字符间断开 */
+    overflow-wrap: break-word;   /* 长单词或URL等在边界内换行 */
+    font-size: 12px;
+}
