@@ -8,7 +8,7 @@ async function bootstrap() {
 
   if (figma.editorType === "figma") {
     figma.showUI(__html__, {
-      width: 320,
+      width: 336,
       height: 650,
       title: "My Figma Plugin!",
     });
