@@ -1,35 +1,26 @@
-import { useState } from "react";
 import "@ui/components/SliderArea.scss"
-import { Slider, Typography, Tooltip } from "antd";
-import { InfoCircleTwoTone, InfoCircleOutlined } from "@ant-design/icons";
 import { SliderSingleProps } from "antd";
+import SliderGroup from "./SliderGroup"
 
-const { Text } = Typography;
-
-const marks: SliderSingleProps['marks'] = {
+const marksSmallLarge: SliderSingleProps['marks'] = {
     1: '小',
     2: '中',
     3: '大',
 }
 
-function SliderArea() {
-    const [disabled, setDisabled] = useState(false);
+const marksLowHigh: SliderSingleProps['marks'] = {
+    1: '低',
+    2: '中',
+    3: '高',
+}
 
+function SliderArea() {
     return (
     <div className="sliderContainer">
-        <Text>AI视野范围 
-            <Tooltip title="待定的说明文字" placement="top">
-                <InfoCircleOutlined style={{color: '#444444'}} />
-            </Tooltip>
-        </Text>
-        <Slider defaultValue={2} max={3} min={1} marks={marks} disabled={disabled} />
-
-        <Text>AI记忆范围 
-            <Tooltip title="待定的说明文字" placement="top">
-                <InfoCircleOutlined style={{color: '#444444'}} />
-            </Tooltip>
-        </Text>
-        <Slider defaultValue={2} max={3} min={1} marks={marks} disabled={disabled} />
+        <SliderGroup label="上下文范围&emsp;" toolTipText="待定的文字" marks={marksSmallLarge} />
+        <SliderGroup label="记忆更新频率" toolTipText="待定的文字" marks={marksLowHigh} />
+        <SliderGroup label="主动对话频率" toolTipText="待定的文字" marks={marksLowHigh} />
+        <SliderGroup label="内容放置位置" toolTipText="待定的文字" marks={marksLowHigh} />
     </div>
     );
 }
