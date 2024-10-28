@@ -1,0 +1,40 @@
+.chatHistory {
+    flex: 1;
+    overflow-y: auto; /* 添加滚动条 */
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+}
+
+.message-row-sent{
+    max-width: 240px;
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    align-self: flex-end;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+.message-row-received{
+    max-width: 240px;
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    align-self: flex-start;
+    padding-left: 10px;
+    padding-bottom: 10px;
+}
+
+.icon-button {
+    position: relative;
+    bottom: 4px;
+    right: 4px;  /* 距离气泡右侧 4px */
+    font-size: 12px; /* 图标大小 */
+    width: 12px;
+    height: 12px;
+    color: #1890FF; /* 图标颜色 */
+  }
