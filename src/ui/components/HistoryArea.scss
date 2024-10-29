@@ -27,10 +27,11 @@
 
 .historyArea {
     width: 100%;
-    height: 55%;
+    height: 60%;
     box-sizing: border-box;
     position: relative;
     display: flex;
     flex-direction: column;
     overflow: auto;
+    scrollbar-width: none;
 }
