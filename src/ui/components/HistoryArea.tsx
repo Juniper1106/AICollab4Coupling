@@ -83,7 +83,7 @@ const App: React.FC = () => {
                         placeholder="给AI发送消息"
                         value = {inputText}
                         onChange = {(e) => setInputText(e.target.value)}
-                        autoSize={{maxRows:1}}
+                        autoSize={{ maxRows: 4 }}
                     />
                     <Button type="primary" onClick={() => {handleSend(inputText)}}>发送</Button>
                 </Space.Compact>
