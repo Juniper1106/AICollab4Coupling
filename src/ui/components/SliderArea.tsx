@@ -4,14 +4,14 @@ import SliderGroup from "./SliderGroup"
 
 const marksSmallLarge: SliderSingleProps['marks'] = {
     1: '小',
-    2: '中',
-    3: '大',
+    // 2: ' ',
+    5: '大',
 }
 
 const marksLowHigh: SliderSingleProps['marks'] = {
     1: '低',
-    2: '中',
-    3: '高',
+    // 2: ' ',
+    5: '高',
 }
 
 function SliderArea() {

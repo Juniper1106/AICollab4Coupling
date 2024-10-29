@@ -22,7 +22,7 @@ function SliderArea({ label, toolTipText, marks }: SliderAreaProps) {
                 <InfoCircleOutlined style={{color: '#444444', marginLeft: '0.25em'}} />
             </Tooltip>
         </Text>
-        <Slider defaultValue={2} max={3} min={1} marks={marks} disabled={disabled} />
+        <Slider defaultValue={2} max={5} min={1} marks={marks} disabled={disabled} />
     </div>
     );
 }
