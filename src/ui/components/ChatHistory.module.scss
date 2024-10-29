@@ -8,32 +8,28 @@
     box-sizing: border-box;
     width: 100%;
     position: relative;
+    padding: 12px;
 }
 
 .message-row-sent{
-    max-width: 240px;
+    max-width: 260px;
     display: flex;
     flex-direction: row;
     align-items: end;
     align-self: flex-end;
-    padding-right: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
 }
 
 .message-row-received{
-    max-width: 240px;
     display: flex;
     flex-direction: row;
     align-items: end;
     align-self: flex-start;
-    padding-left: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
 }
 
 .icon-button {
     position: relative;
-    bottom: 4px;
-    right: 4px;  /* 距离气泡右侧 4px */
     font-size: 12px; /* 图标大小 */
     width: 12px;
     height: 12px;
