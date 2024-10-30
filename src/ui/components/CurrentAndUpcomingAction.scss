@@ -1,0 +1,17 @@
+.currentAndUpcomingActionArea {
+    ul li:first-child {
+        padding-top: 1em;
+    }
+
+    ul li:last-child {
+        padding-bottom: 0;
+    }
+
+    ul li .ant-timeline-item-head-custom {
+        inset-block-start: 18px;
+    }
+
+    ul .ant-timeline-item-last .ant-timeline-item-content {
+        min-height: 1em;
+    }
+}

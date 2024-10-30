@@ -1,5 +1,6 @@
 import { List, Typography } from 'antd';
 import "@ui/components/HistoryActions.scss"
+import CurrentAndUpcomingAction from "./CurrentAndUpcomingAction"
 
 const data = [
   {
@@ -22,6 +23,9 @@ function HistoryActions() {
     return (
         <div className='historyActions'>
           <Title level={5}>AI行为历史</Title>
+          <div className='recentActionsArea'>
+            <CurrentAndUpcomingAction />
+          </div>
           <List
             itemLayout="horizontal"
             dataSource={data}
