@@ -1,6 +1,7 @@
 import { CreateRectMessage } from "@common/network/messages/CreateRectMessage";
 import { HelloMessage } from "@common/network/messages/HelloMessage";
 import { PingMessage } from "@common/network/messages/PingMessage";
+import { CommitUserOperation } from "./messages/CommitUserOperation";
 import { NetworkSide } from "@common/network/sides";
 import * as Networker from "monorepo-networker";
 
@@ -17,5 +18,9 @@ export namespace NetworkMessages {
 
   export const CREATE_RECT = registry.register(
     new CreateRectMessage("create-rect")
+  );
+
+  export const COMMIT_USER_OPERATION = registry.register(
+    new CommitUserOperation("commit-user-operation")
   );
 }
