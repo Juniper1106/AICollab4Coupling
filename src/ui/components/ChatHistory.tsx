@@ -22,31 +22,6 @@ const ChatHistory: React.FC<ChatBoxProps> = ({messages, addAItext}) => {
 
     const [messageApi, contextHolder] = message.useMessage()
 
-    // 从后端恢复数据
-    // const restoreData = async () => {
-    //     const msg_response = await fetch('http://127.0.0.1:5010/api/getMessages')
-    //     const savedMsg = await msg_response.json()
-    //     setMessages(savedMsg)
-    // }
-
-    // 将数据保存到后端
-    // const saveData = async () => {
-    //     await fetch('http://127.0.0.1:5650/api/saveMessages', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(messages),
-    //     })
-    // }
-
-    // useEffect(() => {
-    //     // 组件挂载时恢复数据
-    //     restoreData()
-    // }, [])
-
-    
-
     const Addmsg = (text: string) => {
         addAItext(text)
     }
