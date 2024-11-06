@@ -3,12 +3,22 @@ import { initializeNetwork } from "@common/network/init";
 import { NetworkSide } from "@common/network/sides";
 import { NetworkMessages } from "@common/network/messages";
 
+function debounce(func: (...args: any[]) => any, delay: number) {
+	let timeoutId: number;
+	return (...args: any[]) => {
+		if (timeoutId) clearTimeout(timeoutId);
+		timeoutId = setTimeout(() => func(...args), delay);
+	};
+}
+
+const debouncedCommitOperation = debounce(commitOperation, 1000);
+
 async function getCanvasScreenshot() {
 	const image = await figma.currentPage.exportAsync({
 		format: 'PNG', // 可选择 PNG 或 JPG
 		constraint: {
 			type: 'SCALE', // 可以选择 SCALE 或 WIDTH
-			value: 5 // 缩放比例
+			value: 1 // 缩放比例
 		}
 	});
 	const base64Image = figma.base64Encode(image);
@@ -140,7 +150,7 @@ async function bootstrap() {
 						const props = change.properties.join(', ');
 						message = `用户改变${change.node.type}节点${change.node.id}的属性: ${props}`
 						console.log(message);
-						await commitOperation(message);
+						debouncedCommitOperation(message);
 						break;
 				}
 			}
