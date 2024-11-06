@@ -17,8 +17,8 @@ async function getCanvasScreenshot() {
 	const image = await figma.currentPage.exportAsync({
 		format: 'PNG', // 可选择 PNG 或 JPG
 		constraint: {
-			type: 'SCALE', // 可以选择 SCALE 或 WIDTH
-			value: 1 // 缩放比例
+			type: 'WIDTH',
+			value: 1024 // 缩放比例
 		}
 	});
 	const base64Image = figma.base64Encode(image);
@@ -62,10 +62,10 @@ function getRelativeBBox(canvasBBox: number[], selectionBBox: number[]) {
 	return [left/canvasWidth, upper/canvasHeight, right/canvasWidth, lower/canvasHeight];
 }
 
-async function commitOperation(message: string) {
+async function commitOperation(message: string, selection: readonly SceneNode[] = figma.currentPage.selection) {
 	const canvasScreenshot = await getCanvasScreenshot();
 	const canvasBBox = getBBox(figma.currentPage.children);
-	const selectionBBox = getBBox(figma.currentPage.selection);
+	const selectionBBox = getBBox(selection);
 	const relativeBBox = getRelativeBBox(canvasBBox, selectionBBox);
 	console.log('canvasBBox', canvasBBox);
 	console.log('selectionBBox', selectionBBox);
@@ -150,7 +150,7 @@ async function bootstrap() {
 						const props = change.properties.join(', ');
 						message = `用户改变${change.node.type}节点${change.node.id}的属性: ${props}`
 						console.log(message);
-						debouncedCommitOperation(message);
+						debouncedCommitOperation(message, figma.currentPage.selection);
 						break;
 				}
 			}
