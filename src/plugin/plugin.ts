@@ -3,12 +3,22 @@ import { initializeNetwork } from "@common/network/init";
 import { NetworkSide } from "@common/network/sides";
 import { NetworkMessages } from "@common/network/messages";
 
+function debounce(func: (...args: any[]) => any, delay: number) {
+	let timeoutId: number;
+	return (...args: any[]) => {
+		if (timeoutId) clearTimeout(timeoutId);
+		timeoutId = setTimeout(() => func(...args), delay);
+	};
+}
+
+const debouncedCommitOperation = debounce(commitOperation, 1000);
+
 async function getCanvasScreenshot() {
 	const image = await figma.currentPage.exportAsync({
 		format: 'PNG', // 可选择 PNG 或 JPG
 		constraint: {
-			type: 'SCALE', // 可以选择 SCALE 或 WIDTH
-			value: 5 // 缩放比例
+			type: 'WIDTH',
+			value: 1024 // 缩放比例
 		}
 	});
 	const base64Image = figma.base64Encode(image);
@@ -52,6 +62,38 @@ function getRelativeBBox(canvasBBox: number[], selectionBBox: number[]) {
 	return [left/canvasWidth, upper/canvasHeight, right/canvasWidth, lower/canvasHeight];
 }
 
+async function commitOperation(message: string, selection: readonly SceneNode[] = figma.currentPage.selection) {
+	const canvasScreenshot = await getCanvasScreenshot();
+	const canvasBBox = getBBox(figma.currentPage.children);
+	const selectionBBox = getBBox(selection);
+	const relativeBBox = getRelativeBBox(canvasBBox, selectionBBox);
+	console.log('canvasBBox', canvasBBox);
+	console.log('selectionBBox', selectionBBox);
+	console.log('relativeBBox', relativeBBox);
+	const payload = {
+		message: message,
+		canvasScreenshot: canvasScreenshot,
+		relativeBBox: relativeBBox,
+		timeStamp: new Date().getTime()
+	};
+	await fetch(
+	  'http://127.0.0.1:5010/save_operation',
+	  {
+		method: 'POST',
+		headers: {
+		  'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(payload)
+	  }
+	).then(
+	  response => response.text()
+	).then(
+	  text => console.log(text)
+	).catch(
+	  error => console.error(error)
+	)
+}
+
 async function bootstrap() {
 	initializeNetwork(NetworkSide.PLUGIN);
 
@@ -75,21 +117,9 @@ async function bootstrap() {
 
 	//page切换
 	figma.on('currentpagechange', async () => {
-		const message = `User navigates to page: ${figma.currentPage.name}`
+		const message = `用户切换至页面: ${figma.currentPage.name}`
 		console.log(message);
-		const canvasScreenshot = await getCanvasScreenshot();
-		const canvasBBox = getBBox(figma.currentPage.children);
-		const selectionBBox = getBBox(figma.currentPage.selection);
-		const relativeBBox = getRelativeBBox(canvasBBox, selectionBBox);
-		console.log('canvasBBox', canvasBBox);
-		console.log('selectionBBox', selectionBBox);
-		console.log('relativeBBox', relativeBBox);
-		NetworkMessages.COMMIT_USER_OPERATION.send({
-			message: message,
-			canvasScreenshot: canvasScreenshot,
-			relativeBBox: relativeBBox,
-			timeStamp: new Date().getTime()
-		});
+		await commitOperation(message);
 	});
 
 	//选择改变
@@ -105,34 +135,24 @@ async function bootstrap() {
 			for (const change of event.documentChanges) {
 				switch (change.type) {
 					case "CREATE":
-						message = `User created a ${change.node.type} node ${change.node.id}`
+						message = `用户创建${change.node.type}节点${change.node.id}`
 						console.log(message);
+						await commitOperation(message);
 						break;
 
 					case "DELETE":
-						message = `User deleted a ${change.node.type} node ${change.node.id}`
+						message = `用户删除${change.node.type}节点${change.node.id}`
 						console.log(message);
+						await commitOperation(message);
 						break;
 
 					case "PROPERTY_CHANGE":
 						const props = change.properties.join(', ');
-						message = `User changed the ${props} of the ${change.node.type} node ${change.node.id}`
+						message = `用户改变${change.node.type}节点${change.node.id}的属性: ${props}`
 						console.log(message);
+						debouncedCommitOperation(message, figma.currentPage.selection);
 						break;
 				}
-				const canvasScreenshot = await getCanvasScreenshot();
-				const canvasBBox = getBBox(figma.currentPage.children);
-				const selectionBBox = getBBox(figma.currentPage.selection);
-				const relativeBBox = getRelativeBBox(canvasBBox, selectionBBox);
-				console.log('canvasBBox', canvasBBox);
-				console.log('selectionBBox', selectionBBox);
-				console.log('relativeBBox', relativeBBox);
-				NetworkMessages.COMMIT_USER_OPERATION.send({
-					message: message,
-					canvasScreenshot: canvasScreenshot,
-					relativeBBox: relativeBBox,
-					timeStamp: new Date().getTime()
-				});
 			}
 		});
 	});

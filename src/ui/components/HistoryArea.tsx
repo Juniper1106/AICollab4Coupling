@@ -13,10 +13,17 @@ interface ChatMessage {
     sender: 'sent' | 'received'
 }
 
+const UserAttitudeTest: ChatMessage = {
+    text: '为了设计番茄采摘机器人，建议设计GPS导航模块',
+    img_url: '',
+    sender: 'received'
+}
+
 const App: React.FC = () => {
     const [value, setValue] = useState('History');
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
 
     const addAItext = () => {
 
