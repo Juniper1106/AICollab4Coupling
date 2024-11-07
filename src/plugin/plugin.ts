@@ -11,13 +11,14 @@ function debounce(func: (...args: any[]) => any, delay: number) {
 	};
 }
 
-const debouncedCommitOperation = debounce(commitOperation, 1000);
+let lastSelection: readonly SceneNode[] = [];
+const debouncedCommitOperation = debounce(commitOperation, 500);
 
 async function getCanvasScreenshot() {
 	const image = await figma.currentPage.exportAsync({
 		format: 'PNG', // 可选择 PNG 或 JPG
 		constraint: {
-			type: 'WIDTH',
+			type: 'HEIGHT', // 可选择 HEIGHT, WIDTH 或 SCALE
 			value: 1024 // 缩放比例
 		}
 	});
@@ -25,55 +26,36 @@ async function getCanvasScreenshot() {
 	return base64Image;
 }
 
-function getBBox(nodes: readonly SceneNode[]) {
-	if (nodes.length === 0) {
-		const { x, y, width, height } = figma.viewport.bounds;
-		return [x, y, x+width, y+height];
+async function getSelectionScreenshot() {
+	let selection : readonly SceneNode[] = figma.currentPage.selection;
+	if (selection.length === 0) {
+		console.log('no selection to capture');
+		if (lastSelection.length === 0) {
+			return null;
+		}
+		selection = lastSelection;
 	}
-	let left = Number.POSITIVE_INFINITY;
-	let upper = Number.POSITIVE_INFINITY;
-	let right = Number.NEGATIVE_INFINITY;
-	let lower = Number.NEGATIVE_INFINITY;
-	nodes.forEach(node => {
-		if (node.absoluteBoundingBox) {
-			const x = node.absoluteBoundingBox.x;
-			const y = node.absoluteBoundingBox.y;
-			const width = node.absoluteBoundingBox.width;
-			const height = node.absoluteBoundingBox.height;
-			left = Math.min(left, x);
-			upper = Math.min(upper, y);
-			right = Math.max(right, x + width);
-			lower = Math.max(lower, y + height);
+	const image = await selection[0].exportAsync({
+		format: 'PNG', // 可选择 PNG 或 JPG
+		constraint: {
+			type: 'HEIGHT',
+			value: 1024 // 缩放比例
 		}
 	});
-	return [left, upper, right, lower];
-}
-
-function getRelativeBBox(canvasBBox: number[], selectionBBox: number[]) {
-	let left = Math.max(canvasBBox[0], selectionBBox[0]) - canvasBBox[0];
-	let upper = Math.max(canvasBBox[1], selectionBBox[1]) - canvasBBox[1];
-	let right = Math.min(canvasBBox[2], selectionBBox[2]) - canvasBBox[0];
-	let lower = Math.min(canvasBBox[3], selectionBBox[3]) - canvasBBox[1];
-	const canvasWidth = canvasBBox[2] - canvasBBox[0];
-	const canvasHeight = canvasBBox[3] - canvasBBox[1];
-	if (left >= right || upper >= lower) {
-		return [0, 0, 1, 1];
-	}
-	return [left/canvasWidth, upper/canvasHeight, right/canvasWidth, lower/canvasHeight];
+	const base64Image = figma.base64Encode(image);
+	return base64Image;
 }
 
 async function commitOperation(message: string, selection: readonly SceneNode[] = figma.currentPage.selection) {
-	const canvasScreenshot = await getCanvasScreenshot();
-	const canvasBBox = getBBox(figma.currentPage.children);
-	const selectionBBox = getBBox(selection);
-	const relativeBBox = getRelativeBBox(canvasBBox, selectionBBox);
-	console.log('canvasBBox', canvasBBox);
-	console.log('selectionBBox', selectionBBox);
-	console.log('relativeBBox', relativeBBox);
+	let canvasScreenshot = await getCanvasScreenshot();
+	let selectionScreenshot = await getSelectionScreenshot();
+	if (selectionScreenshot === null) {
+		selectionScreenshot = canvasScreenshot;
+	}
 	const payload = {
 		message: message,
 		canvasScreenshot: canvasScreenshot,
-		relativeBBox: relativeBBox,
+		selectionScreenshot: selectionScreenshot,
 		timeStamp: new Date().getTime()
 	};
 	await fetch(
@@ -115,6 +97,9 @@ async function bootstrap() {
 
 	NetworkMessages.HELLO_UI.send({ text: "Hey there, UI!" });
 
+	//载入字体
+	await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+	
 	//page切换
 	figma.on('currentpagechange', async () => {
 		const message = `用户切换至页面: ${figma.currentPage.name}`
@@ -125,6 +110,9 @@ async function bootstrap() {
 	//选择改变
 	figma.on('selectionchange', async () => {
 		console.log('selction', figma.currentPage.selection);
+		if (figma.currentPage.selection.length != 0) {
+			lastSelection = figma.currentPage.selection;
+		}
 	});
 
 	//文档改变
