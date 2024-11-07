@@ -115,6 +115,9 @@ async function bootstrap() {
 
 	NetworkMessages.HELLO_UI.send({ text: "Hey there, UI!" });
 
+	//载入字体
+	await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+	
 	//page切换
 	figma.on('currentpagechange', async () => {
 		const message = `用户切换至页面: ${figma.currentPage.name}`

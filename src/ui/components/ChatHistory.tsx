@@ -4,6 +4,7 @@ import { message } from 'antd'
 import { Button, Image} from 'antd'
 import { RetweetOutlined, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import Message from './Message'
+import { NetworkMessages } from "@common/network/messages";
 
 interface ChatMessage {
   text: string
@@ -92,7 +93,12 @@ const ChatHistory: React.FC<ChatBoxProps> = ({messages, addAItext}) => {
         {messages.map(msg => (
           <div className={styles[`message-row-${msg.sender}`]}>
             <Message text={msg.text} img_url={msg.img_url} sender={msg.sender}/>
-            {(msg.sender === 'received')&&<Button className={styles['icon-button']} shape="circle" type='text' icon={<RetweetOutlined/>} size='small' onClick={() => Addmsg(msg.text)}/>}
+            {(msg.sender === 'received')&&<Button className={styles['icon-button']} shape="circle" type='text' icon={<RetweetOutlined/>} size='small' onClick={() => {
+              NetworkMessages.ADD_TEXT.send({text: msg.text})
+            }}/>}
+            {/* {(msg.sender === 'received')&&<Button className={styles['icon-button-ai']} shape="circle" type='text' icon={<RetweetOutlined />} size='small' onClick={() => {
+              NetworkMessages.ADD_TEXT_IN_AI.send({text: msg.text})
+            }}/>} */}
             {/* {(msg.sender === 'received')&&<Button className={styles['icon-button-accept']} shape="circle" type='text' icon={<CheckCircleOutlined />} size='small' onClick={() => commitUserAttitude(msg, true)}/>}
             {(msg.sender === 'received')&&<Button className={styles['icon-button-deny']} shape="circle" type='text' icon={<CloseCircleOutlined />} size='small' onClick={() => commitUserAttitude(msg, false)}/>} */}
           </div>
