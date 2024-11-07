@@ -11,7 +11,7 @@ export class AddContentInAI extends Networker.MessageType<Payload> {
     return NetworkSide.PLUGIN;
   }
 
-  public handle(payload: Payload, from: Networker.Side): void {
+  public async handle(payload: Payload, from: Networker.Side): Promise<void> {
     if (figma.editorType === "figma") {
       //寻找名称为AI workspace的frmae，如果没有则创建
       let aiWorkspace = figma.currentPage.findOne(node => node.name === 'AI workspace' && node.type === 'FRAME') as FrameNode
@@ -34,7 +34,21 @@ export class AddContentInAI extends Networker.MessageType<Payload> {
         aiWorkspace.appendChild(text)
       } else {
         //在AI workspace中添加图片
-        console.log('add image')
+        const imageUrl = payload.img_url; // 获取传递的图片 URL
+
+        // 获取图片数据并创建图像
+        const response = await fetch(imageUrl);
+        const imageData = await response.arrayBuffer();
+        const image = figma.createImage(new Uint8Array(imageData));
+  
+        // 创建图片节点并设置图片填充
+        const imageNode = figma.createRectangle();
+        imageNode.resize(200, 200); // 设置图片大小，可以根据需求调整
+        imageNode.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: image.hash }];
+        imageNode.name = 'image'
+  
+        // 插入到画布的中心
+        aiWorkspace.appendChild(imageNode)
       }
     }
   }

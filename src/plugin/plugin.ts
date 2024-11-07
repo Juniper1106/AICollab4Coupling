@@ -32,8 +32,11 @@ async function getSelectionScreenshot() {
 		console.log('no selection to capture');
 		if (lastSelection.length === 0) {
 			return null;
+		} else if (figma.currentPage.children.includes(lastSelection[0])) {
+			selection = lastSelection;
+		} else {
+			return null;
 		}
-		selection = lastSelection;
 	}
 	const image = await selection[0].exportAsync({
 		format: 'PNG', // 可选择 PNG 或 JPG
