@@ -1,25 +1,19 @@
 import { List, Typography } from 'antd';
 import "@ui/components/HistoryActions.scss"
 import CurrentAndUpcomingAction from "./CurrentAndUpcomingAction"
+import React from 'react';
 
-const data = [
-  {
-    title: 'Ant Design Title 1',
-  },
-  {
-    title: 'Ant Design Title 2',
-  },
-  {
-    title: 'Ant Design Title 3',
-  },
-  {
-    title: 'Ant Design Title 4',
-  },
-];
+interface AI_action {
+  title: string
+  description: string
+}
+
+interface ActionProps {
+  actions: AI_action[]
+}
 
 const { Title } = Typography;
-
-function HistoryActions() {
+const HistoryActions: React.FC<ActionProps> = ( {actions} ) => {
     return (
         <div className='historyActions'>
           <Title level={5}>AI行为历史</Title>
@@ -28,12 +22,12 @@ function HistoryActions() {
           </div>
           <List
             itemLayout="horizontal"
-            dataSource={data}
+            dataSource={actions}
             renderItem={(item, index) => (
               <List.Item>
                 <List.Item.Meta
                   title={<a href="https://ant.design">{item.title}</a>}
-                  description="Ant Design, a design language for background applications, is refined by Ant UED Team"
+                  description={item.description}
                 />
               </List.Item>
             )}

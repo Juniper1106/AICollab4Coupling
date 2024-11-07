@@ -4,6 +4,7 @@ import { MessageOutlined, HistoryOutlined } from '@ant-design/icons';
 import '@ui/components/HistoryArea.scss'
 import HistoryActions from "./HistoryActions";
 import ChatHistory from "./ChatHistory"
+import io from 'socket.io-client';
 
 const { TextArea } = Input;
 
@@ -11,6 +12,11 @@ interface ChatMessage {
     text: string
     img_url: string
     sender: 'sent' | 'received'
+}
+
+interface AI_action {
+    title: string
+    description: string
 }
 
 const UserAttitudeTest: ChatMessage = {
@@ -25,20 +31,28 @@ const App: React.FC = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
 
+    const [actions, setActions] = useState<AI_action[]>([]);
+    const socket = io('http://127.0.0.1:5010')
+    useEffect(() => {
+      socket.on('AI_action', (data) => {
+        setActions([...actions, data])
+      })
+    })
+
     const addAItext = () => {
 
     }
 
-    // const restoreData = async () => {
-    //     const msg_response = await fetch('http://127.0.0.1:5010/getMessages')
-    //     const savedMsg = await msg_response.json()
-    //     setMessages(savedMsg)
-    // }
+    const restoreData = async () => {
+        const msg_response = await fetch('http://127.0.0.1:5010/getMessages')
+        const savedMsg = await msg_response.json()
+        setMessages(savedMsg)
+    }
 
-    // useEffect(() => {
-    //     // 组件挂载时恢复数据
-    //     restoreData()
-    // }, [])
+    useEffect(() => {
+        // 组件挂载时恢复数据
+        restoreData()
+    }, [])
 
     const gptChatFunction = async (question: string) => {
         // 创建要发送的数据对象
@@ -78,7 +92,7 @@ const App: React.FC = () => {
 
     function switchPage() {
         if (value === 'History') {
-            return <HistoryActions />;
+            return <HistoryActions actions={actions}/>;
         } else {
             return <ChatHistory messages={messages} addAItext={addAItext}/>
         }
