@@ -15,7 +15,7 @@ interface ChatMessage {
 
 const UserAttitudeTest: ChatMessage = {
     text: '为了设计番茄采摘机器人，建议设计GPS导航模块',
-    img_url: '',
+    img_url: 'https://img79.jc35.com/9/20210928/637684201785624684382.jpg',
     sender: 'received'
 }
 

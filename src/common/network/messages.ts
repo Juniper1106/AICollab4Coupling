@@ -1,8 +1,8 @@
 import { CreateRectMessage } from "@common/network/messages/CreateRectMessage";
 import { HelloMessage } from "@common/network/messages/HelloMessage";
 import { PingMessage } from "@common/network/messages/PingMessage";
-import { AddTextInAI } from "@common/network/messages/AddTextInAI";
-import { AddText } from "@common/network/messages/AddText";
+import { AddContentInAI } from "@common/network/messages/AddContentInAI";
+import { AddContent } from "@common/network/messages/AddContent";
 import { NetworkSide } from "@common/network/sides";
 import * as Networker from "monorepo-networker";
 
@@ -21,11 +21,11 @@ export namespace NetworkMessages {
     new CreateRectMessage("create-rect")
   );
 
-  export const ADD_TEXT = registry.register(
-    new AddText("add-text")
+  export const ADD_CONTENT_IN_AI = registry.register(
+    new AddContentInAI("add-content-in-ai")
   );
 
-  export const ADD_TEXT_IN_AI = registry.register(
-    new AddTextInAI("add-text-in-ai")
+  export const ADD_CONTENT = registry.register(
+    new AddContent("add-content")
   );
 }

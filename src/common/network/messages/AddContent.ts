@@ -2,17 +2,19 @@ import { NetworkSide } from "@common/network/sides";
 import * as Networker from "monorepo-networker";
 
 interface Payload {
-  text: string
+  text: string,
+  img_url: string
 }
 
-export class AddText extends Networker.MessageType<Payload> {
+export class AddContent extends Networker.MessageType<Payload> {
   public receivingSide(): Networker.Side {
     return NetworkSide.PLUGIN;
   }
 
   public handle(payload: Payload, from: Networker.Side): void {
     if (figma.editorType === "figma") {
-      //在figma中创建文本框
+      if (payload.img_url === '') {
+        //在figma中创建文本框
         const nodes = figma.currentPage.children;
         const text = figma.createText()
         text.characters = payload.text
@@ -22,16 +24,15 @@ export class AddText extends Networker.MessageType<Payload> {
 
         text.x = figma.viewport.center.x;
         text.y = figma.viewport.center.y;
-  
-        for (let y = figma.viewport.center.y; y < figma.viewport.bounds.y + figma.viewport.bounds.height && !foundPosition; y += offset) {
-          for (let x = figma.viewport.center.x; x < figma.viewport.bounds.x + figma.viewport.bounds.width && !foundPosition; x += offset) {
+        for (let x = figma.viewport.center.x; x < figma.viewport.bounds.x + figma.viewport.bounds.width && !foundPosition; x += offset) {
+          for (let y = figma.viewport.center.y; y < figma.viewport.bounds.y + figma.viewport.bounds.height && !foundPosition; y += offset) {
             let isOverlapping = false;
-  
+
             // 检查是否与已有节点重叠
             for (const node of nodes) {
               if (node.visible && node.absoluteBoundingBox) {
                 const { x: nodeX, y: nodeY, width: nodeWidth, height: nodeHeight } = node.absoluteBoundingBox;
-  
+
                 if (
                   x < nodeX + nodeWidth + offset &&
                   x + text.width > nodeX - offset &&
@@ -44,7 +45,7 @@ export class AddText extends Networker.MessageType<Payload> {
                 }
               }
             }
-  
+
             if (!isOverlapping) {
               text.x = x;
               text.y = y;
@@ -55,6 +56,10 @@ export class AddText extends Networker.MessageType<Payload> {
 
         figma.currentPage.appendChild(text)
         // figma.viewport.scrollAndZoomIntoView([text])
+      } else {
+        // 在figma中添加图片
+        console.log('add image')
+      }
     }
   }
 }
