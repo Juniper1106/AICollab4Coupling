@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Input, Space, Segmented } from 'antd';
 import { MessageOutlined, HistoryOutlined } from '@ant-design/icons';
 import '@ui/components/HistoryArea.scss'
@@ -28,6 +28,17 @@ const App: React.FC = () => {
     const addAItext = () => {
 
     }
+
+    // const restoreData = async () => {
+    //     const msg_response = await fetch('http://127.0.0.1:5010/getMessages')
+    //     const savedMsg = await msg_response.json()
+    //     setMessages(savedMsg)
+    // }
+
+    // useEffect(() => {
+    //     // 组件挂载时恢复数据
+    //     restoreData()
+    // }, [])
 
     const gptChatFunction = async (question: string) => {
         // 创建要发送的数据对象
