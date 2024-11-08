@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { Button, Dropdown, Flex, Image, message } from 'antd';
 import styles from '@ui/components/ChatHistory.module.scss'
-import { message } from 'antd'
-import { Button, Image} from 'antd'
-import { RetweetOutlined, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { RetweetOutlined, EllipsisOutlined } from '@ant-design/icons'
 import Message from './Message'
 import { NetworkMessages } from "@common/network/messages";
 
@@ -26,61 +25,86 @@ async function commitUserAttitude(msg: ChatMessage, attitude: boolean) {
   }
   console.log('sending user attitude', payload)
   await fetch(
-	  'http://127.0.0.1:5010/save_attitude',
-	  {
-		method: 'POST',
-		headers: {
-		  'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(payload)
-	  }
-	).then(
-	  response => response.text()
-	).then(
-	  text => console.log(text)
-	).catch(
-	  error => console.error(error)
-	)
+    'http://127.0.0.1:5010/save_attitude',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }
+  ).then(
+    response => response.text()
+  ).then(
+    text => console.log(text)
+  ).catch(
+    error => console.error(error)
+  )
 }
 
-const ChatHistory: React.FC<ChatBoxProps> = ({messages, addAItext}) => {
-    
-    const [inputText, setInputText] = useState('')
+const ChatHistory: React.FC<ChatBoxProps> = ({ messages, addAItext }) => {
 
-    const [messageApi, contextHolder] = message.useMessage()
+  const [inputText, setInputText] = useState('')
 
-    const Addmsg = (text: string) => {
-        addAItext(text)
+  const [messageApi, contextHolder] = message.useMessage()
+
+  const Addmsg = (text: string) => {
+    addAItext(text)
+  }
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  const items = [
+    {
+      key: '1',
+      label: '添加到画布',
+    },
+    {
+      key: '2',
+      label: '添加到工作区',
+    },
+    {
+      key: '3',
+      label: '拒绝',
     }
+  ];
 
-    const messagesEndRef = useRef<HTMLDivElement | null>(null)
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const handleMenuClick = (msg: ChatMessage) => (e: any) => {
+    console.log('Menu item clicked:', e.key);
+    if (e.key === '1') {
+      NetworkMessages.ADD_CONTENT.send({ text: msg.text, img_url: msg.img_url })
+      commitUserAttitude(msg, true)
+    } else if (e.key === '2') {
+      NetworkMessages.ADD_CONTENT_IN_AI.send({ text: msg.text, img_url: msg.img_url })
+      commitUserAttitude(msg, true)
+    } else if (e.key === '3') {
+      commitUserAttitude(msg, false)
     }
+  };
 
-    useEffect(() => {
-        scrollToBottom()
-    }, [messages])
-
-    return (
-      <div className={styles['chatHistory']}>
-        {messages.map(msg => (
-          <div className={styles[`message-row-${msg.sender}`]}>
-            <Message text={msg.text} img_url={msg.img_url} sender={msg.sender}/>
-            {(msg.sender === 'received')&&<Button className={styles['icon-button']} shape="circle" type='text' icon={<RetweetOutlined/>} size='small' onClick={() => {
-              NetworkMessages.ADD_CONTENT.send({text: msg.text, img_url: msg.img_url})
-            }}/>}
-            {/* {(msg.sender === 'received')&&<Button className={styles['icon-button-ai']} shape="circle" type='text' icon={<RetweetOutlined />} size='small' onClick={() => {
-              NetworkMessages.ADD_CONTENT_IN_AI.send({text: msg.text, img_url: msg.img_url})
-            }}/>} */}
-            {/* {(msg.sender === 'received')&&<Button className={styles['icon-button-accept']} shape="circle" type='text' icon={<CheckCircleOutlined />} size='small' onClick={() => commitUserAttitude(msg, true)}/>}
-            {(msg.sender === 'received')&&<Button className={styles['icon-button-deny']} shape="circle" type='text' icon={<CloseCircleOutlined />} size='small' onClick={() => commitUserAttitude(msg, false)}/>} */}
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-    )
+  return (
+    <div className={styles['chatHistory']}>
+      {messages.map(msg => (
+        <div className={styles[`message-row-${msg.sender}`]}>
+          <Message text={msg.text} img_url={msg.img_url} sender={msg.sender} />
+          {msg.sender === 'received' && (
+            <Dropdown menu={{ items, onClick: handleMenuClick(msg) }} >
+              <Button className={styles['icon-button']} shape="circle" type='text' icon={<EllipsisOutlined />} size='small' />
+            </Dropdown>
+          )}
+        </div>
+      ))}
+      <div ref={messagesEndRef} />
+    </div>
+  )
 }
 
 export default ChatHistory
