@@ -28,6 +28,22 @@
     padding-bottom: 12px;
 }
 
+.message-row-loading{
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    align-self: flex-start;
+    padding-bottom: 12px;
+}
+
+.message-row-server{
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    align-self: flex-start;
+    padding-bottom: 12px;
+}
+
 .icon-button {
     position: relative;
     font-size: 10px; /* 图标大小 */

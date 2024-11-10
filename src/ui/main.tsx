@@ -3,7 +3,7 @@ import { NetworkMessages } from "@common/network/messages";
 import { NetworkSide } from "@common/network/sides";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import io from 'socket.io-client';
+import { socket } from './components/socket';
 
 async function bootstrap() {
   initializeNetwork(NetworkSide.UI);
@@ -16,7 +16,7 @@ async function bootstrap() {
   const root = ReactDOM.createRoot(rootElement);
 
   //socket连接
-	const socket = io('http://127.0.0.1:5010'); // 确保安装了 socket.io-client
+	// const socket = io('http://127.0.0.1:5010'); // 确保安装了 socket.io-client
 	console.log('Socket established', socket);
 	//显示连接失败，查看失败原因
 	socket.on('connect_error', (error) => {

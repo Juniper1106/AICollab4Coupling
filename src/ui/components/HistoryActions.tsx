@@ -5,6 +5,7 @@ import React from 'react';
 
 interface AI_action {
   title: string
+  action: string
   description: string
 }
 
@@ -27,7 +28,13 @@ const HistoryActions: React.FC<ActionProps> = ( {actions} ) => {
               <List.Item>
                 <List.Item.Meta
                   title={<a href="https://ant.design">{item.title}</a>}
-                  description={item.description}
+                  description={
+                    <span
+                        dangerouslySetInnerHTML={{
+                            __html: `要点：${item.action}<br />解释：${item.description}`,
+                        }}
+                    />
+                  }
                 />
               </List.Item>
             )}

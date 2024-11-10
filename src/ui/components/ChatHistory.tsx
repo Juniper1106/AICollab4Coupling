@@ -8,7 +8,7 @@ import { NetworkMessages } from "@common/network/messages";
 interface ChatMessage {
   text: string
   img_url: string
-  sender: 'sent' | 'received'
+  sender: 'sent' | 'received' | 'loading' | 'server'
 }
 
 interface ChatBoxProps {
@@ -95,7 +95,7 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, addAItext }) => {
       {messages.map(msg => (
         <div className={styles[`message-row-${msg.sender}`]}>
           <Message text={msg.text} img_url={msg.img_url} sender={msg.sender} />
-          {msg.sender === 'received' && (
+          {(msg.sender === 'received' || msg.sender === 'server') && (
             <Dropdown menu={{ items, onClick: handleMenuClick(msg) }} >
               <Button className={styles['icon-button']} shape="circle" type='text' icon={<EllipsisOutlined />} size='small' />
             </Dropdown>

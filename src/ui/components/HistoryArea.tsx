@@ -4,18 +4,18 @@ import { MessageOutlined, HistoryOutlined } from '@ant-design/icons';
 import '@ui/components/HistoryArea.scss'
 import HistoryActions from "./HistoryActions";
 import ChatHistory from "./ChatHistory"
-import io from 'socket.io-client';
-
+import { socket } from './socket';
 const { TextArea } = Input;
 
 interface ChatMessage {
     text: string
     img_url: string
-    sender: 'sent' | 'received'
+    sender: 'sent' | 'received' | 'loading' | 'server'
 }
 
 interface AI_action {
     title: string
+    action: string
     description: string
 }
 
@@ -32,12 +32,12 @@ const App: React.FC = () => {
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
 
     const [actions, setActions] = useState<AI_action[]>([]);
-    const socket = io('http://127.0.0.1:5010')
+    // const socket = io('http://127.0.0.1:5010')
     useEffect(() => {
       socket.on('AI_action', (data) => {
-        setActions([...actions, data])
+        setActions(prevActions => [data, ...prevActions])
       })
-    })
+    }, [])
 
     const addAItext = () => {
 
@@ -54,7 +54,34 @@ const App: React.FC = () => {
         restoreData()
     }, [])
 
+    useEffect(() => {
+        // 连接后端并监听消息
+        socket.on('AI_message', (data) => {
+            const reply: ChatMessage = {
+                text: data.text,
+                img_url: data.image,
+                sender: 'server'
+            }
+            setMessages(prevMessages => [...prevMessages, reply])
+        });
+
+        // 清理事件监听器
+        return () => {
+            socket.off('AI_message');
+        };
+    }, []);
+
     const gptChatFunction = async (question: string) => {
+        // 创建一个加载中的消息
+        const loadingMessage: ChatMessage = {
+            text: '', // 内容为空
+            img_url: '', // 图片为空
+            sender: 'loading', // 设置一个特殊的发送者标识
+        }
+
+        // 先把loading状态的消息添加到messages
+        setMessages(prevMessages => [...prevMessages, loadingMessage])
+
         // 创建要发送的数据对象
         const sendData = { "prompt": question }
         const response = await fetch('http://127.0.0.1:5010/chat', {
@@ -72,7 +99,27 @@ const App: React.FC = () => {
             img_url: receivedData.image,
             sender: 'received'
         }
-        setMessages(prevMessages => [...prevMessages, reply])
+        // setMessages(prevMessages => [...prevMessages, reply])
+        // 替换掉最后一个loading消息为真实的回复
+        setMessages(prevMessages => {
+            // 查找最后一个 sender 为 'loading' 的消息的索引
+            const lastIndex = (() => {
+                for (let i = prevMessages.length - 1; i >= 0; i--) {
+                    if (prevMessages[i].sender === 'loading') {
+                        return i;
+                    }
+                }
+                return -1; // 如果没有找到，返回 -1
+            })();
+            
+            if (lastIndex !== -1) {
+                // 移除该消息，并在末尾添加新的 reply
+                return [...prevMessages.slice(0, lastIndex), ...prevMessages.slice(lastIndex + 1), reply];
+            }
+
+            // 如果没有找到 'loading' 的消息，直接添加 reply
+            return [...prevMessages, reply];
+        })
     }
 
     const handleSend = (txt:string) => {
