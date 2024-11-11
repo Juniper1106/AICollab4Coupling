@@ -58,8 +58,8 @@ const App: React.FC = () => {
         // 连接后端并监听消息
         socket.on('AI_message', (data) => {
             const reply: ChatMessage = {
-                text: data.text,
-                img_url: data.image,
+                text: data["text"],
+                img_url: data["img_url"],
                 sender: 'server'
             }
             setMessages(prevMessages => [...prevMessages, reply])
@@ -137,9 +137,13 @@ const App: React.FC = () => {
         }
     }
 
+    const handleTitleClick = () => {
+        setValue('Chat');
+    };
+
     function switchPage() {
         if (value === 'History') {
-            return <HistoryActions actions={actions}/>;
+            return <HistoryActions actions={actions} onTitleClick={handleTitleClick}/>;
         } else {
             return <ChatHistory messages={messages} addAItext={addAItext}/>
         }

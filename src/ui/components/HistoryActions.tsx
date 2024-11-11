@@ -11,10 +11,11 @@ interface AI_action {
 
 interface ActionProps {
   actions: AI_action[]
+  onTitleClick: () => void
 }
 
 const { Title } = Typography;
-const HistoryActions: React.FC<ActionProps> = ( {actions} ) => {
+const HistoryActions: React.FC<ActionProps> = ( {actions, onTitleClick} ) => {
     return (
         <div className='historyActions'>
           <Title level={5}>AI行为历史</Title>
@@ -27,7 +28,7 @@ const HistoryActions: React.FC<ActionProps> = ( {actions} ) => {
             renderItem={(item, index) => (
               <List.Item>
                 <List.Item.Meta
-                  title={<a href="https://ant.design">{item.title}</a>}
+                  title={<a onClick={onTitleClick}>{item.title}</a>}
                   description={
                     <span
                         dangerouslySetInnerHTML={{

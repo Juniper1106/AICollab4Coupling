@@ -17,8 +17,9 @@ export class AddContent extends Networker.MessageType<Payload> {
       const offset = 20;
       let foundPosition = false;
 
-      if (payload.img_url === '') {
+      if (payload.text !== '') {
         //在figma中创建文本框
+        console.log("add text")
         const text = figma.createText()
         text.characters = payload.text
         text.x = figma.viewport.center.x;
@@ -58,6 +59,7 @@ export class AddContent extends Networker.MessageType<Payload> {
       } else {
         // 在figma中添加图片
         const imageUrl = payload.img_url; // 获取传递的图片 URL
+        console.log(imageUrl)
 
         // 获取图片数据并创建图像
         const response = await fetch(imageUrl);
