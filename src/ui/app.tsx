@@ -5,7 +5,7 @@ import { Input, Button } from 'antd';
 import "@ui/styles/main.scss";
 import SliderArea from "./components/SliderArea";
 import HistoryArea from "./components/HistoryArea";
-
+import DropDownArea from './components/DropDownArea';
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -49,6 +49,7 @@ function App() {
       return <LoginPageForProbe />
     else return (
       <>
+        <DropDownArea />
         <SliderArea />
         <HistoryArea />
       </>
