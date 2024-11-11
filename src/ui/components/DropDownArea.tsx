@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Dropdown, Space, Typography, Tooltip } from 'antd';
-import { InfoCircleTwoTone, InfoCircleOutlined, TeamOutlined } from "@ant-design/icons";
+import { Dropdown, Space, Typography } from 'antd';
+import { TeamOutlined } from "@ant-design/icons";
+import { useCouplingStyle, useCouplingStyleUpdate } from '@ui/contexts/CouplingStyle';
 import "@ui/components/DropDownArea.scss";
 
 const items: MenuProps['items'] = [
@@ -25,32 +26,30 @@ const items: MenuProps['items'] = [
 ];
 
 const DropDownArea: React.FC = () => {
-  const inital = 'DISC'
-  const [selectedLabel, setSelectedLabel] = useState(inital);
+  const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
+  const setCouplingStyle = useCouplingStyleUpdate();      // 获取更新 CouplingStyle 的方法
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    setSelectedLabel(e.key);
+    setCouplingStyle(e.key);  // 使用全局更新方法更新 CouplingStyle
   };
 
   return (
     <div className="dropDownContainer">
       <div className='label'>
-      <TeamOutlined />
-      <Typography>
-        耦合范式
-      </Typography>
+        <TeamOutlined />
+        <Typography>耦合范式</Typography>
       </div>
       <Dropdown
         menu={{
           items,
           selectable: true,
-          defaultSelectedKeys: [inital],
+          defaultSelectedKeys: [couplingStyle],
           onClick: handleMenuClick,
         }}
       >
         <Typography.Link>
           <Space>
-            {selectedLabel}
+            {couplingStyle}
             <DownOutlined />
           </Space>
         </Typography.Link>
