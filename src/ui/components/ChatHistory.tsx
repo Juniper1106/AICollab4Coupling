@@ -4,6 +4,7 @@ import styles from '@ui/components/ChatHistory.module.scss'
 import { RetweetOutlined, EllipsisOutlined } from '@ant-design/icons'
 import Message from './Message'
 import { NetworkMessages } from "@common/network/messages";
+import notifyAudio from '@ui/assets/audio/notify.mp3'
 
 interface ChatMessage {
   text: string
@@ -82,9 +83,13 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, addAItext }) => {
     if (e.key === '1') {
       NetworkMessages.ADD_CONTENT.send({ text: msg.text, img_url: msg.img_url })
       commitUserAttitude(msg, true)
+      const audio = new Audio(notifyAudio);
+      audio.play();
     } else if (e.key === '2') {
       NetworkMessages.ADD_CONTENT_IN_AI.send({ text: msg.text, img_url: msg.img_url })
       commitUserAttitude(msg, true)
+      const audio = new Audio(notifyAudio);
+      audio.play();
     } else if (e.key === '3') {
       commitUserAttitude(msg, false)
     }
