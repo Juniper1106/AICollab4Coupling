@@ -5,6 +5,7 @@ import { Dropdown, Space, Typography } from 'antd';
 import { TeamOutlined } from "@ant-design/icons";
 import { useCouplingStyle, useCouplingStyleUpdate } from '@ui/contexts/CouplingStyle';
 import "@ui/components/DropDownArea.scss";
+import { socket } from '@ui/components/socket';
 
 const items: MenuProps['items'] = [
   {
@@ -31,6 +32,7 @@ const DropDownArea: React.FC = () => {
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
     setCouplingStyle(e.key);  // 使用全局更新方法更新 CouplingStyle
+    socket.emit('styleChange', e.key);
   };
 
   return (
