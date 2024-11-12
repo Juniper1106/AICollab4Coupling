@@ -41,7 +41,7 @@ async function bootstrap() {
 	if (figma.editorType === "figma") {
 		figma.showUI(__html__, {
 			width: 320,
-			height: 650,
+			height: 680,
 			title: "My Figma Plugin!",
 		});
 	} else if (figma.editorType === "figjam") {
