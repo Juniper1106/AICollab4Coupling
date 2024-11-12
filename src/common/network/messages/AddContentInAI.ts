@@ -31,6 +31,9 @@ export class AddContentInAI extends Networker.MessageType<Payload> {
         const nodes = aiWorkspace.children;
         const text = figma.createText()
         text.characters = payload.text
+        // 设置文本框最大宽度
+        const width = text.width>320?320:text.width
+        text.resize(width, text.height)
         aiWorkspace.appendChild(text)
       } else {
         //在AI workspace中添加图片
@@ -43,7 +46,7 @@ export class AddContentInAI extends Networker.MessageType<Payload> {
   
         // 创建图片节点并设置图片填充
         const imageNode = figma.createRectangle();
-        imageNode.resize(200, 200); // 设置图片大小，可以根据需求调整
+        imageNode.resize(160, 160); // 设置图片大小，可以根据需求调整
         imageNode.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: image.hash }];
         imageNode.name = 'image'
   
