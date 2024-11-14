@@ -87,7 +87,6 @@ export class AddContent extends Networker.MessageType<Payload> {
         imageNode.strokes = [{ type: 'SOLID', color: { r: 1, g: 0.835, b: 0.569 }, opacity: 1 }];
         imageNode.strokeWeight = 3;
         // 插入到画布的中心
-        figma.currentPage.appendChild(imageNode);
         imageNode.x = figma.viewport.center.x;
         imageNode.y = figma.viewport.center.y;
         for (let x = figma.viewport.center.x; x < figma.viewport.bounds.x + figma.viewport.bounds.width && !foundPosition; x += offset) {
@@ -119,7 +118,7 @@ export class AddContent extends Networker.MessageType<Payload> {
             }
           }
         }
-
+        figma.currentPage.appendChild(imageNode);
         console.log('image added')
       }
     }

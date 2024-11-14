@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Input, Space, Segmented } from 'antd';
 import { MessageOutlined, HistoryOutlined } from '@ant-design/icons';
 import '@ui/components/HistoryArea.scss'
 import HistoryActions from "./HistoryActions";
 import ChatHistory from "./ChatHistory"
 import { socket } from './socket';
+import notifyAudio from '@ui/assets/audio/notify.mp3'
+import { NetworkMessages } from '@common/network/messages';
+
 const { TextArea } = Input;
 
 interface ChatMessage {
@@ -29,15 +32,20 @@ const App: React.FC = () => {
     const [value, setValue] = useState('History');
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const messagesRef = useRef<ChatMessage[]>(messages);
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
 
     const [actions, setActions] = useState<AI_action[]>([]);
     // const socket = io('http://127.0.0.1:5010')
     useEffect(() => {
-      socket.on('AI_action', (data) => {
-        setActions(prevActions => [data, ...prevActions])
-      })
+        socket.on('AI_action', (data) => {
+            setActions(prevActions => [data, ...prevActions])
+        })
     }, [])
+
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
 
     const addAItext = () => {
 
@@ -62,7 +70,27 @@ const App: React.FC = () => {
                 img_url: data["img_url"],
                 sender: 'server'
             }
+            const audio = new Audio(notifyAudio);
+            audio.play();
             setMessages(prevMessages => [...prevMessages, reply])
+        });
+
+        socket.on('AI_conclude', async (data) => {
+            NetworkMessages.ADD_CONTENT.send({ text: data["text"], img_url: data["img_url"] })
+        
+            // 获取最后两条‘received’消息
+            console.log("all messages:", messagesRef.current);
+            const receivedMessages = messagesRef.current.filter(msg => msg.sender === 'received');
+            const lastTwoReceived = receivedMessages.slice(-2);
+            
+            for (const msg of lastTwoReceived) {
+                if (msg.img_url) {
+                    NetworkMessages.ADD_CONTENT.send({ text: "", img_url: msg.img_url });
+                    const audio = new Audio(notifyAudio);
+                    audio.play();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
         });
 
         // 清理事件监听器
@@ -99,6 +127,8 @@ const App: React.FC = () => {
             img_url: receivedData.image,
             sender: 'received'
         }
+        const audio = new Audio(notifyAudio);
+        audio.play();
         // setMessages(prevMessages => [...prevMessages, reply])
         // 替换掉最后一个loading消息为真实的回复
         setMessages(prevMessages => {
@@ -111,7 +141,7 @@ const App: React.FC = () => {
                 }
                 return -1; // 如果没有找到，返回 -1
             })();
-            
+
             if (lastIndex !== -1) {
                 // 移除该消息，并在末尾添加新的 reply
                 return [...prevMessages.slice(0, lastIndex), ...prevMessages.slice(lastIndex + 1), reply];
@@ -122,7 +152,7 @@ const App: React.FC = () => {
         })
     }
 
-    const handleSend = (txt:string) => {
+    const handleSend = (txt: string) => {
         if (txt !== '') {
             setValue('Chat')
             const newMessage: ChatMessage = {
@@ -143,9 +173,9 @@ const App: React.FC = () => {
 
     function switchPage() {
         if (value === 'History') {
-            return <HistoryActions actions={actions} onTitleClick={handleTitleClick}/>;
+            return <HistoryActions actions={actions} onTitleClick={handleTitleClick} />;
         } else {
-            return <ChatHistory messages={messages} addAItext={addAItext}/>
+            return <ChatHistory messages={messages} addAItext={addAItext} />
         }
     }
 
@@ -162,13 +192,13 @@ const App: React.FC = () => {
                         value={value}
                         onChange={(val) => setValue(val)}
                     />
-                    <TextArea 
+                    <TextArea
                         placeholder="给AI发送消息"
-                        value = {inputText}
-                        onChange = {(e) => setInputText(e.target.value)}
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
                         autoSize={{ maxRows: 4 }}
                     />
-                    <Button type="primary" onClick={() => {handleSend(inputText)}}>发送</Button>
+                    <Button type="primary" onClick={() => { handleSend(inputText) }}>发送</Button>
                 </Space.Compact>
             </div>
         </div>

@@ -78,8 +78,15 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, addAItext }) => {
     }
   ];
 
-  const handleMenuClick = (msg: ChatMessage) => (e: any) => {
+  const handleMenuClick = (msg: ChatMessage) => async (e: any) => {
     console.log('Menu item clicked:', e.key);
+    const lastReceived = messages.filter(msg => msg.sender === 'received').pop()
+    if (msg === lastReceived && (e.key === '1' || e.key === '2')) {
+      console.log('last received message')
+      const response = await fetch('http://127.0.0.1:5010/recount')
+      const res = await response.json()
+      console.log(res)
+    }
     if (e.key === '1') {
       NetworkMessages.ADD_CONTENT.send({ text: msg.text, img_url: msg.img_url })
       commitUserAttitude(msg, true)

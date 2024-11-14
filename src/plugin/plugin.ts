@@ -24,6 +24,11 @@ async function getSelectionScreenshot() {
 		console.log('no selection to capture');
 		return null;
 	}
+	// 如果lastSelection的节点已经被删除,则直接返回
+	if (lastSelection[0].removed) {
+		console.log('selection has been removed');
+		return null;
+	}
 	const image = await lastSelection[0].exportAsync({
 		format: 'PNG', // 可选择 PNG 或 JPG
 		constraint: {
