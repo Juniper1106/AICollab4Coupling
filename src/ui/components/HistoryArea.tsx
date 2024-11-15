@@ -91,9 +91,16 @@ const App: React.FC = () => {
                 img_url: data["img_url"],
                 sender: 'server'
             }
-            const audio = new Audio(notifyAudio);
-            audio.play();
+            if (couplingStyle != 'SGP') {
+                const audio = new Audio(notifyAudio);
+                audio.play();
+            } 
             setMessages(prevMessages => [...prevMessages, reply])
+            if (couplingStyle === 'SIDC') {
+                NetworkMessages.ADD_CONTENT.send({ text: data["text"], img_url: data["img_url"] });
+            } else if (couplingStyle === 'SGP') {
+                NetworkMessages.ADD_CONTENT_IN_AI.send({ text: data["text"], img_url: data["img_url"] });
+            }
         });
 
         socket.on('AI_conclude', async (data) => {
@@ -148,7 +155,7 @@ const App: React.FC = () => {
             img_url: receivedData.image,
             sender: 'received'
         }
-        if (couplingStyle === 'DISC' || couplingStyle === '待机') {
+        if (couplingStyle === 'DISC' || couplingStyle === '待机' || couplingStyle === 'SIDC') {
             const audio = new Audio(notifyAudio);
             audio.play();
         }
