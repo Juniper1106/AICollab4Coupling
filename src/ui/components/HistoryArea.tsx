@@ -7,6 +7,7 @@ import ChatHistory from "./ChatHistory"
 import { socket } from './socket';
 import notifyAudio from '@ui/assets/audio/notify.mp3'
 import { NetworkMessages } from '@common/network/messages';
+import { useCouplingStyle } from '@ui/contexts/CouplingStyle';
 
 const { TextArea } = Input;
 
@@ -29,14 +30,34 @@ const UserAttitudeTest: ChatMessage = {
 }
 
 const App: React.FC = () => {
+    const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
+
     const [value, setValue] = useState('History');
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
     const messagesRef = useRef<ChatMessage[]>(messages);
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
 
     const [actions, setActions] = useState<AI_action[]>([]);
     // const socket = io('http://127.0.0.1:5010')
+
+    useEffect(() => {
+        const intervalId = setInterval(async () => {
+            console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
+            if (Date.now() - lastUpdateTime >= 15000) {
+                setLastUpdateTime(Date.now());
+                console.log('已等待15秒，发送inactive_change请求');
+                const response = await fetch('http://127.0.0.1:5010/inactive_update')
+                const res = await response.json()
+                console.log(res)
+            }
+        }, 1000); // 每秒检查一次
+    
+        // 清除定时器
+        return () => clearInterval(intervalId);
+      }, [lastUpdateTime]);
+    
     useEffect(() => {
         socket.on('AI_action', (data) => {
             setActions(prevActions => [data, ...prevActions])
@@ -127,8 +148,10 @@ const App: React.FC = () => {
             img_url: receivedData.image,
             sender: 'received'
         }
-        const audio = new Audio(notifyAudio);
-        audio.play();
+        if (couplingStyle === 'DISC' || couplingStyle === '待机') {
+            const audio = new Audio(notifyAudio);
+            audio.play();
+        }
         // setMessages(prevMessages => [...prevMessages, reply])
         // 替换掉最后一个loading消息为真实的回复
         setMessages(prevMessages => {
@@ -195,7 +218,10 @@ const App: React.FC = () => {
                     <TextArea
                         placeholder="给AI发送消息"
                         value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
+                        onChange={(e) => {
+                            setInputText(e.target.value);
+                            setLastUpdateTime(Date.now());
+                        }}
                         autoSize={{ maxRows: 4 }}
                     />
                     <Button type="primary" onClick={() => { handleSend(inputText) }}>发送</Button>

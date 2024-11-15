@@ -29,7 +29,7 @@ interface CouplingStyleProviderProps {
 }
 
 export const CouplingStyleProvider: React.FC<CouplingStyleProviderProps> = ({ children }) => {
-  const [globalString, setGlobalString] = useState<string>('DISC'); // 初始化为一个空字符串
+  const [globalString, setGlobalString] = useState<string>('待机'); // initial state
 
   return (
     <CouplingStyleContext.Provider value={globalString}>

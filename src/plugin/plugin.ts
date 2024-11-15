@@ -6,6 +6,20 @@ import { NetworkMessages } from "@common/network/messages";
 let lastSelection: readonly SceneNode[] = [];
 let messages: Set<string> = new Set();
 let propChanges: Map<string, Set<string>> = new Map();
+let lastChangeTime = Date.now();
+
+function startDocumentChangeTimer() {
+	setInterval(async () => {
+		console.log(`已等待 ${(Date.now() - lastChangeTime)/1000} 秒无用户操作`);
+		if (Date.now() - lastChangeTime >= 15000) {
+			lastChangeTime = Date.now();
+			const response = await fetch('http://127.0.0.1:5010/inactive_change')
+			const res = await response.json()
+			console.log(res)
+		}
+	}, 1000); // 每秒输出一次消息
+	console.log('已设置定时器');
+}
 
 async function getCanvasScreenshot() {
 	const image = await figma.currentPage.exportAsync({
@@ -131,6 +145,7 @@ async function bootstrap() {
 		console.log('figma.currentPage', figma.currentPage);
 		figma.on("documentchange", async (event) => {
 			let message = "";
+			lastChangeTime = Date.now();
 			for (const change of event.documentChanges) {
 				switch (change.type) {
 					case "CREATE":
@@ -161,6 +176,8 @@ async function bootstrap() {
 			}
 		});
 	});
+
+	startDocumentChangeTimer();
 }
 
 bootstrap();
