@@ -8,29 +8,31 @@ import { socket } from './socket';
 const { TextArea } = Input;
 
 interface ChatMessage {
+    id: number
     text: string
     img_url: string
     sender: 'sent' | 'received' | 'loading' | 'server'
 }
 
 interface AI_action {
+    id: number
     title: string
     action: string
     description: string
 }
 
-const UserAttitudeTest: ChatMessage = {
-    text: '为了设计番茄采摘机器人，建议设计GPS导航模块',
-    img_url: 'https://img79.jc35.com/9/20210928/637684201785624684382.jpg',
-    sender: 'received'
-}
+// const UserAttitudeTest: ChatMessage = {
+//     text: '为了设计番茄采摘机器人，建议设计GPS导航模块',
+//     img_url: 'https://img79.jc35.com/9/20210928/637684201785624684382.jpg',
+//     sender: 'received'
+// }
 
 const App: React.FC = () => {
     const [value, setValue] = useState('History');
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
-
+    const [selectedMessageId, setSelectedMessageId] = useState<number>(0);
     const [actions, setActions] = useState<AI_action[]>([]);
     // const socket = io('http://127.0.0.1:5010')
     useEffect(() => {
@@ -39,14 +41,13 @@ const App: React.FC = () => {
       })
     }, [])
 
-    const addAItext = () => {
-
-    }
-
     const restoreData = async () => {
         const msg_response = await fetch('http://127.0.0.1:5010/getMessages')
         const savedMsg = await msg_response.json()
         setMessages(savedMsg)
+        const action_response = await fetch('http://127.0.0.1:5010/getActions')
+        const savedAction = await action_response.json()
+        setActions(savedAction)
     }
 
     useEffect(() => {
@@ -58,11 +59,13 @@ const App: React.FC = () => {
         // 连接后端并监听消息
         socket.on('AI_message', (data) => {
             const reply: ChatMessage = {
+                id: data["id"],
                 text: data["text"],
                 img_url: data["img_url"],
                 sender: 'server'
             }
             setMessages(prevMessages => [...prevMessages, reply])
+            setSelectedMessageId(data["id"])
         });
 
         // 清理事件监听器
@@ -73,7 +76,10 @@ const App: React.FC = () => {
 
     const gptChatFunction = async (question: string) => {
         // 创建一个加载中的消息
+        const res = await fetch('http://127.0.0.1:5010/getMsgId')
+        const id = await res.json()
         const loadingMessage: ChatMessage = {
+            id: id["id"],
             text: '', // 内容为空
             img_url: '', // 图片为空
             sender: 'loading', // 设置一个特殊的发送者标识
@@ -81,9 +87,10 @@ const App: React.FC = () => {
 
         // 先把loading状态的消息添加到messages
         setMessages(prevMessages => [...prevMessages, loadingMessage])
+        setSelectedMessageId(id["id"])
 
         // 创建要发送的数据对象
-        const sendData = { "prompt": question }
+        const sendData = { "id": loadingMessage.id, "prompt": question }
         const response = await fetch('http://127.0.0.1:5010/chat', {
             method: 'POST',
             headers: {
@@ -95,6 +102,7 @@ const App: React.FC = () => {
         const receivedData = await response.json()
         console.log(receivedData.image)
         const reply: ChatMessage = {
+            id: receivedData.id,
             text: receivedData.text,
             img_url: receivedData.image,
             sender: 'received'
@@ -113,19 +121,29 @@ const App: React.FC = () => {
             })();
             
             if (lastIndex !== -1) {
-                // 移除该消息，并在末尾添加新的 reply
-                return [...prevMessages.slice(0, lastIndex), ...prevMessages.slice(lastIndex + 1), reply];
+                const updatedMessages = [...prevMessages];
+                updatedMessages[lastIndex] = {
+                    ...updatedMessages[lastIndex],
+                    sender: 'received',
+                    text: reply.text,
+                    img_url: reply.img_url
+                };
+                return updatedMessages;
             }
 
             // 如果没有找到 'loading' 的消息，直接添加 reply
             return [...prevMessages, reply];
         })
+        setSelectedMessageId(receivedData.id)
     }
 
-    const handleSend = (txt:string) => {
+    const handleSend = async (txt:string) => {
         if (txt !== '') {
             setValue('Chat')
+            const response = await fetch('http://127.0.0.1:5010/getMsgId')
+            const new_id = await response.json()
             const newMessage: ChatMessage = {
+                id: new_id["id"],
                 text: txt,
                 img_url: "",
                 sender: 'sent'
@@ -133,11 +151,13 @@ const App: React.FC = () => {
             setMessages(prevMessages => [...prevMessages, newMessage])
             console.log('将发送消息:', inputText);
             setInputText('');
+            setSelectedMessageId(new_id["id"])
             gptChatFunction(newMessage.text)
         }
     }
 
-    const handleTitleClick = () => {
+    const handleTitleClick = (id: number) => {
+        setSelectedMessageId(id);
         setValue('Chat');
     };
 
@@ -145,7 +165,7 @@ const App: React.FC = () => {
         if (value === 'History') {
             return <HistoryActions actions={actions} onTitleClick={handleTitleClick}/>;
         } else {
-            return <ChatHistory messages={messages} addAItext={addAItext}/>
+            return <ChatHistory messages={messages} scrollToMessageId={selectedMessageId}/>
         }
     }
 

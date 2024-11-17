@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Button, Dropdown, Flex, Image, message } from 'antd';
 import styles from '@ui/components/ChatHistory.module.scss'
 import { RetweetOutlined, EllipsisOutlined } from '@ant-design/icons'
@@ -7,6 +7,7 @@ import { NetworkMessages } from "@common/network/messages";
 import notifyAudio from '@ui/assets/audio/notify.mp3'
 
 interface ChatMessage {
+  id: number
   text: string
   img_url: string
   sender: 'sent' | 'received' | 'loading' | 'server'
@@ -14,7 +15,7 @@ interface ChatMessage {
 
 interface ChatBoxProps {
   messages: ChatMessage[]
-  addAItext: (str: string) => void  // 定义传入的函数类型
+  scrollToMessageId: number
 }
 
 async function commitUserAttitude(msg: ChatMessage, attitude: boolean) {
@@ -43,25 +44,26 @@ async function commitUserAttitude(msg: ChatMessage, attitude: boolean) {
   )
 }
 
-const ChatHistory: React.FC<ChatBoxProps> = ({ messages, addAItext }) => {
-
-  const [inputText, setInputText] = useState('')
-
-  const [messageApi, contextHolder] = message.useMessage()
-
-  const Addmsg = (text: string) => {
-    addAItext(text)
-  }
+const ChatHistory: React.FC<ChatBoxProps> = ({ messages, scrollToMessageId }) => {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const messageRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  // }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+  // useEffect(() => {
+  //   scrollToBottom()
+  // }, [messages])
+
+  useLayoutEffect(() => {
+    console.log(messageRefs.current)
+    if (scrollToMessageId && messageRefs.current[scrollToMessageId]) {
+      console.log(scrollToMessageId)
+      messageRefs.current[scrollToMessageId]?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [scrollToMessageId, messages]);
 
   const items = [
     {
@@ -98,7 +100,11 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, addAItext }) => {
   return (
     <div className={styles['chatHistory']}>
       {messages.map(msg => (
-        <div className={styles[`message-row-${msg.sender}`]}>
+        <div
+            key={msg.id}
+            ref={(el) => (messageRefs.current[msg.id] = el)}
+            className={styles[`message-row-${msg.sender}`]}
+        >
           <Message text={msg.text} img_url={msg.img_url} sender={msg.sender} />
           {(msg.sender === 'received' || msg.sender === 'server') && (
             <Dropdown menu={{ items, onClick: handleMenuClick(msg) }} >

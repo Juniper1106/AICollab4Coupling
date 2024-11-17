@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserOutlined } from '@ant-design/icons';
 import { Input, Button } from 'antd';
 import "@ui/styles/main.scss";
@@ -7,9 +7,27 @@ import SliderArea from "./components/SliderArea";
 import HistoryArea from "./components/HistoryArea";
 import DropDownArea from './components/DropDownArea';
 import { CouplingStyleProvider } from '@ui/contexts/CouplingStyle';
+import { socket } from './components/socket';
 
 function App() {
   const [login, setLogin] = useState(false);
+  useEffect(() => {
+    // 插件关闭时，通知后端停止任务
+    const handlePluginClose = () => {
+      if (login) {
+        socket.emit('stop_background_task');
+        // 短暂延迟，确保消息发送成功
+        socket.disconnect();  // 手动断开连接
+      }
+    };
+
+    // 监听插件关闭事件
+    window.addEventListener('beforeunload', handlePluginClose);
+
+    return () => {
+      window.removeEventListener('beforeunload', handlePluginClose);
+    };
+  }, [login]);
 
   const LoginPageForProbe: React.FC = () => {
     const [userName, setUserName] = useState('');
@@ -29,6 +47,7 @@ function App() {
           const receivedData = await response.json()
           setLogin(true)
           console.log(receivedData.message)
+          socket.emit('start_background_task');
         }
         else {
           console.error('Failed to send data');
