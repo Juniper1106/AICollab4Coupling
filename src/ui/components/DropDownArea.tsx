@@ -29,8 +29,24 @@ const DropDownArea: React.FC = () => {
   const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
   const setCouplingStyle = useCouplingStyleUpdate();      // 获取更新 CouplingStyle 的方法
 
-  const handleMenuClick: MenuProps['onClick'] = (e) => {
+  const handleMenuClick: MenuProps['onClick'] = async (e) => {
     setCouplingStyle(e.key);  // 使用全局更新方法更新 CouplingStyle
+    await fetch(
+      'http://127.0.0.1:5010/style_change',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({style: e.key})
+      }
+    ).then(
+      response => response.text()
+    ).then(
+      text => console.log(text)
+    ).catch(
+      error => console.error(error)
+    )
   };
 
   return (

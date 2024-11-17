@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Input, Space, Segmented } from 'antd';
 import { MessageOutlined, HistoryOutlined } from '@ant-design/icons';
 import '@ui/components/HistoryArea.scss'
 import HistoryActions from "./HistoryActions";
 import ChatHistory from "./ChatHistory"
 import { socket } from './socket';
+import notifyAudio from '@ui/assets/audio/notify.mp3'
+import { NetworkMessages } from '@common/network/messages';
+import { useCouplingStyle } from '@ui/contexts/CouplingStyle';
+
 const { TextArea } = Input;
 
 interface ChatMessage {
@@ -28,18 +32,43 @@ interface AI_action {
 // }
 
 const App: React.FC = () => {
+    const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
+
     const [value, setValue] = useState('History');
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
+    const messagesRef = useRef<ChatMessage[]>(messages);
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
     const [selectedMessageId, setSelectedMessageId] = useState<number>(0);
     const [actions, setActions] = useState<AI_action[]>([]);
     // const socket = io('http://127.0.0.1:5010')
+
     useEffect(() => {
-      socket.on('AI_action', (data) => {
-        setActions(prevActions => [data, ...prevActions])
-      })
+        const intervalId = setInterval(async () => {
+            console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
+            if (Date.now() - lastUpdateTime >= 15000) {
+                setLastUpdateTime(Date.now());
+                console.log('已等待15秒，发送inactive_change请求');
+                const response = await fetch('http://127.0.0.1:5010/inactive_update')
+                const res = await response.json()
+                console.log(res)
+            }
+        }, 1000); // 每秒检查一次
+    
+        // 清除定时器
+        return () => clearInterval(intervalId);
+      }, [lastUpdateTime]);
+    
+    useEffect(() => {
+        socket.on('AI_action', (data) => {
+            setActions(prevActions => [data, ...prevActions])
+        })
     }, [])
+
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
 
     const restoreData = async () => {
         const msg_response = await fetch('http://127.0.0.1:5010/getMessages')
@@ -64,8 +93,35 @@ const App: React.FC = () => {
                 img_url: data["img_url"],
                 sender: 'server'
             }
+            if (couplingStyle != 'SGP') {
+                const audio = new Audio(notifyAudio);
+                audio.play();
+            } 
             setMessages(prevMessages => [...prevMessages, reply])
             setSelectedMessageId(data["id"])
+            if (couplingStyle === 'SIDC') {
+                NetworkMessages.ADD_CONTENT.send({ text: data["text"], img_url: data["img_url"] });
+            } else if (couplingStyle === 'SGP') {
+                NetworkMessages.ADD_CONTENT_IN_AI.send({ text: data["text"], img_url: data["img_url"] });
+            }
+        });
+
+        socket.on('AI_conclude', async (data) => {
+            NetworkMessages.ADD_CONTENT.send({ text: data["text"], img_url: data["img_url"] })
+        
+            // 获取最后两条‘received’消息
+            console.log("all messages:", messagesRef.current);
+            const receivedMessages = messagesRef.current.filter(msg => msg.sender === 'received');
+            const lastTwoReceived = receivedMessages.slice(-2);
+            
+            for (const msg of lastTwoReceived) {
+                if (msg.img_url) {
+                    NetworkMessages.ADD_CONTENT.send({ text: "", img_url: msg.img_url });
+                    const audio = new Audio(notifyAudio);
+                    audio.play();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
         });
 
         // 清理事件监听器
@@ -107,6 +163,10 @@ const App: React.FC = () => {
             img_url: receivedData.image,
             sender: 'received'
         }
+        if (couplingStyle === 'DISC' || couplingStyle === '待机' || couplingStyle === 'SIDC') {
+            const audio = new Audio(notifyAudio);
+            audio.play();
+        }
         // setMessages(prevMessages => [...prevMessages, reply])
         // 替换掉最后一个loading消息为真实的回复
         setMessages(prevMessages => {
@@ -119,7 +179,7 @@ const App: React.FC = () => {
                 }
                 return -1; // 如果没有找到，返回 -1
             })();
-            
+
             if (lastIndex !== -1) {
                 const updatedMessages = [...prevMessages];
                 updatedMessages[lastIndex] = {
@@ -163,7 +223,7 @@ const App: React.FC = () => {
 
     function switchPage() {
         if (value === 'History') {
-            return <HistoryActions actions={actions} onTitleClick={handleTitleClick}/>;
+            return <HistoryActions actions={actions} onTitleClick={handleTitleClick} />;
         } else {
             return <ChatHistory messages={messages} scrollToMessageId={selectedMessageId}/>
         }
@@ -182,13 +242,16 @@ const App: React.FC = () => {
                         value={value}
                         onChange={(val) => setValue(val)}
                     />
-                    <TextArea 
+                    <TextArea
                         placeholder="给AI发送消息"
-                        value = {inputText}
-                        onChange = {(e) => setInputText(e.target.value)}
+                        value={inputText}
+                        onChange={(e) => {
+                            setInputText(e.target.value);
+                            setLastUpdateTime(Date.now());
+                        }}
                         autoSize={{ maxRows: 4 }}
                     />
-                    <Button type="primary" onClick={() => {handleSend(inputText)}}>发送</Button>
+                    <Button type="primary" onClick={() => { handleSend(inputText) }}>发送</Button>
                 </Space.Compact>
             </div>
         </div>
