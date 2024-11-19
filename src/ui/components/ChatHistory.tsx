@@ -46,21 +46,10 @@ async function commitUserAttitude(msg: ChatMessage, attitude: boolean) {
 
 const ChatHistory: React.FC<ChatBoxProps> = ({ messages, scrollToMessageId }) => {
 
-  const messagesEndRef = useRef<HTMLDivElement | null>(null)
-  const messageRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
-  // const scrollToBottom = () => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  // }
-
-  // useEffect(() => {
-  //   scrollToBottom()
-  // }, [messages])
-
-  useLayoutEffect(() => {
-    console.log(messageRefs.current)
+  useEffect(() => {
     if (scrollToMessageId && messageRefs.current[scrollToMessageId]) {
-      console.log(scrollToMessageId)
       messageRefs.current[scrollToMessageId]?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [scrollToMessageId, messages]);
@@ -109,7 +98,7 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, scrollToMessageId }) =>
       {messages.map(msg => (
         <div
             key={msg.id}
-            ref={(el) => (messageRefs.current[msg.id] = el)}
+            ref={(el) => {messageRefs.current[msg.id] = el}}
             className={styles[`message-row-${msg.sender}`]}
         >
           <Message text={msg.text} img_url={msg.img_url} sender={msg.sender} />
@@ -120,7 +109,6 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, scrollToMessageId }) =>
           )}
         </div>
       ))}
-      <div ref={messagesEndRef} />
     </div>
   )
 }
