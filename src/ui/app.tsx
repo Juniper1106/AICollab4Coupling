@@ -11,23 +11,6 @@ import { socket } from './components/socket';
 
 function App() {
   const [login, setLogin] = useState(false);
-  useEffect(() => {
-    // 插件关闭时，通知后端停止任务
-    const handlePluginClose = () => {
-      if (login) {
-        socket.emit('stop_background_task');
-        // 短暂延迟，确保消息发送成功
-        socket.disconnect();  // 手动断开连接
-      }
-    };
-
-    // 监听插件关闭事件
-    window.addEventListener('beforeunload', handlePluginClose);
-
-    return () => {
-      window.removeEventListener('beforeunload', handlePluginClose);
-    };
-  }, [login]);
 
   const LoginPageForProbe: React.FC = () => {
     const [userName, setUserName] = useState('');

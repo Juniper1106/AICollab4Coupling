@@ -1,10 +1,11 @@
 import React from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Dropdown, Space, Typography } from 'antd';
-import { TeamOutlined } from "@ant-design/icons";
+import { Dropdown, Space, Typography, Button, Tooltip } from 'antd';
+import { TeamOutlined, ReloadOutlined, CloseOutlined } from "@ant-design/icons";
 import { useCouplingStyle, useCouplingStyleUpdate } from '@ui/contexts/CouplingStyle';
 import "@ui/components/DropDownArea.scss";
+import { socket } from './socket';
 
 const items: MenuProps['items'] = [
   {
@@ -49,6 +50,14 @@ const DropDownArea: React.FC = () => {
     )
   };
 
+  const stopbackend = () => {
+    socket.emit('stop_background_task');
+  }
+
+  const refresh = () => {
+    socket.emit('refresh');
+  }
+
   return (
     <div className="dropDownContainer">
       <div className='label'>
@@ -70,6 +79,12 @@ const DropDownArea: React.FC = () => {
           </Space>
         </Typography.Link>
       </Dropdown>
+      <Tooltip title="刷新">
+        <Button type="primary" shape="circle" icon={<ReloadOutlined />} size='small' onClick={refresh}/>
+      </Tooltip>
+      <Tooltip title="终止主动回复">
+        <Button type="primary" shape="circle" icon={<CloseOutlined /> } size='small' onClick={stopbackend}/>
+      </Tooltip>
     </div>
   );
 };

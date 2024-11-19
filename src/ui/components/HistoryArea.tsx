@@ -124,6 +124,10 @@ const App: React.FC = () => {
             }
         });
 
+        socket.on('reload', async () => {
+            restoreData()
+        });
+
         // 清理事件监听器
         return () => {
             socket.off('AI_message');
