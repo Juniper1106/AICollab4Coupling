@@ -15,47 +15,55 @@ export class AddContent extends Networker.MessageType<Payload> {
     if (figma.editorType === "figma") {
       const nodes = figma.currentPage.children;
       const offset = 20;
-      let foundPosition = false;
-
-      if (payload.text !== '') {
-        //在figma中创建文本框
-        console.log("add text")
-        const text = figma.createText()
-        text.characters = payload.text
-        text.x = figma.viewport.center.x;
-        text.y = figma.viewport.center.y;
-        // 设置文本框最大宽度
-        const width = text.width>320?320:text.width
-        text.resize(width, text.height)
-        for (let x = figma.viewport.center.x; x < figma.viewport.bounds.x + figma.viewport.bounds.width && !foundPosition; x += offset) {
-          for (let y = figma.viewport.center.y; y < figma.viewport.bounds.y + figma.viewport.bounds.height && !foundPosition; y += offset) {
-            let isOverlapping = false;
-
-            // 检查是否与已有节点重叠
-            for (const node of nodes) {
-              if (node.visible && node.absoluteBoundingBox) {
-                const { x: nodeX, y: nodeY, width: nodeWidth, height: nodeHeight } = node.absoluteBoundingBox;
-
-                if (
-                  x < nodeX + nodeWidth + offset &&
-                  x + text.width > nodeX - offset &&
-                  y < nodeY + nodeHeight + offset &&
-                  y + text.height > nodeY - offset
-                ) {
-                  isOverlapping = true;
-                  console.log('overlapping', nodes)
-                  break;
-                }
-              }
-            }
-
-            if (!isOverlapping) {
-              text.x = x;
-              text.y = y;
-              foundPosition = true;
+      const gridSize = 20; // 网格大小
+      const grid = new Map<string, boolean>(); // 用于存储网格中的占用情况
+  
+      // 将已有节点的位置标记到网格中
+      for (const node of nodes) {
+        if (node.visible && node.absoluteBoundingBox) {
+          const { x: nodeX, y: nodeY, width: nodeWidth, height: nodeHeight } = node.absoluteBoundingBox;
+          const startX = Math.floor(nodeX / gridSize);
+          const endX = Math.floor((nodeX + nodeWidth) / gridSize);
+          const startY = Math.floor(nodeY / gridSize);
+          const endY = Math.floor((nodeY + nodeHeight) / gridSize);
+  
+          for (let x = startX; x <= endX; x++) {
+            for (let y = startY; y <= endY; y++) {
+              grid.set(`${x},${y}`, true);
             }
           }
         }
+      }
+  
+      let foundPosition = false;
+      let posX = figma.viewport.center.x;
+      let posY = figma.viewport.center.y;
+  
+      // 查找空余位置
+      for (let y = Math.floor(figma.viewport.center.y / gridSize); y < Math.floor((figma.viewport.bounds.y + figma.viewport.bounds.height) / gridSize) && !foundPosition; y++) {
+        for (let x = Math.floor(figma.viewport.center.x / gridSize); x < Math.floor((figma.viewport.bounds.x + figma.viewport.bounds.width) / gridSize) && !foundPosition; x++) {
+          if (!grid.get(`${x},${y}`)) {
+            posX = x * gridSize;
+            posY = y * gridSize;
+            foundPosition = true;
+          }
+        }
+      }
+
+      if (!foundPosition) {
+        posX = figma.viewport.center.x;
+        posY = figma.viewport.center.y;
+      }
+
+      if (payload.text !== '') {
+        //在figma中创建文本框
+        const text = figma.createText()
+        text.characters = payload.text
+        text.x = posX;
+        text.y = posY;
+        // 设置文本框最大宽度
+        const width = text.width>320?320:text.width
+        text.resize(width, text.height)
 
         // 在文本框周边绘制一个矩形
         const rect = figma.createRectangle();
@@ -68,6 +76,8 @@ export class AddContent extends Networker.MessageType<Payload> {
         figma.currentPage.appendChild(rect);
         figma.currentPage.appendChild(text)
         // figma.viewport.scrollAndZoomIntoView([text])
+        console.log('text added')
+        figma.ui.postMessage({ type: "addContent", message: text.id });
       } else {
         // 在figma中添加图片
         const imageUrl = payload.img_url; // 获取传递的图片 URL
@@ -87,39 +97,11 @@ export class AddContent extends Networker.MessageType<Payload> {
         imageNode.strokes = [{ type: 'SOLID', color: { r: 1, g: 0.835, b: 0.569 }, opacity: 1 }];
         imageNode.strokeWeight = 3;
         // 插入到画布的中心
-        imageNode.x = figma.viewport.center.x;
-        imageNode.y = figma.viewport.center.y;
-        for (let x = figma.viewport.center.x; x < figma.viewport.bounds.x + figma.viewport.bounds.width && !foundPosition; x += offset) {
-          for (let y = figma.viewport.center.y; y < figma.viewport.bounds.y + figma.viewport.bounds.height && !foundPosition; y += offset) {
-            let isOverlapping = false;
-
-            // 检查是否与已有节点重叠
-            for (const node of nodes) {
-              if (node.visible && node.absoluteBoundingBox) {
-                const { x: nodeX, y: nodeY, width: nodeWidth, height: nodeHeight } = node.absoluteBoundingBox;
-
-                if (
-                  x < nodeX + nodeWidth + offset &&
-                  x + imageNode.width > nodeX - offset &&
-                  y < nodeY + nodeHeight + offset &&
-                  y + imageNode.height > nodeY - offset
-                ) {
-                  isOverlapping = true;
-                  console.log('overlapping', nodes)
-                  break;
-                }
-              }
-            }
-
-            if (!isOverlapping) {
-              imageNode.x = x;
-              imageNode.y = y;
-              foundPosition = true;
-            }
-          }
-        }
+        imageNode.x = posX;
+        imageNode.y = posY;
         figma.currentPage.appendChild(imageNode);
         console.log('image added')
+        figma.ui.postMessage({ type: "addContent", message: imageNode.id });
       }
     }
   }
