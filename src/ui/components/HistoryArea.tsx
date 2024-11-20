@@ -46,7 +46,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-            console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
+            // console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
             if (Date.now() - lastUpdateTime >= 15000) {
                 setLastUpdateTime(Date.now());
                 console.log('已等待15秒，发送inactive_change请求');
@@ -108,7 +108,9 @@ const App: React.FC = () => {
 
         socket.on('AI_conclude', async (data) => {
             NetworkMessages.ADD_CONTENT.send({ text: data["text"], img_url: data["img_url"] })
-        
+            const audio = new Audio(notifyAudio);
+            audio.play();
+            
             // 获取最后两条‘received’消息
             console.log("all messages:", messagesRef.current);
             const receivedMessages = messagesRef.current.filter(msg => msg.sender === 'received');

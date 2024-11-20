@@ -10,7 +10,7 @@ let lastChangeTime = Date.now();
 
 function startDocumentChangeTimer() {
 	setInterval(async () => {
-		console.log(`已等待 ${(Date.now() - lastChangeTime)/1000} 秒无用户操作`);
+		// console.log(`已等待 ${(Date.now() - lastChangeTime)/1000} 秒无用户操作`);
 		if (Date.now() - lastChangeTime >= 15000) {
 			lastChangeTime = Date.now();
 			const response = await fetch('http://127.0.0.1:5010/inactive_change')
