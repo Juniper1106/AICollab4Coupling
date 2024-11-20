@@ -15,7 +15,7 @@ interface ChatMessage {
 
 interface ChatBoxProps {
   messages: ChatMessage[]
-  scrollToMessageId: number
+  scrollToMessageId: number | null
 }
 
 async function commitUserAttitude(msg: ChatMessage, attitude: boolean) {

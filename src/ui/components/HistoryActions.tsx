@@ -5,6 +5,8 @@ import React from 'react';
 
 interface AI_action {
   id: number
+  msg_id: number | null
+  node_id: string
   title: string
   action: string
   description: string
@@ -12,7 +14,7 @@ interface AI_action {
 
 interface ActionProps {
   actions: AI_action[]
-  onTitleClick: (id: number) => void
+  onTitleClick: (msg_id: number|null, node_id: string) => void
 }
 
 const { Title } = Typography;
@@ -29,7 +31,7 @@ const HistoryActions: React.FC<ActionProps> = ( {actions, onTitleClick} ) => {
             renderItem={(item, index) => (
               <List.Item>
                 <List.Item.Meta
-                  title={<a onClick={() => onTitleClick(item.id)}>{item.title}</a>}
+                  title={<a onClick={() => onTitleClick(item.msg_id, item.node_id)}>{item.title}</a>}
                   description={
                     <span
                         dangerouslySetInnerHTML={{

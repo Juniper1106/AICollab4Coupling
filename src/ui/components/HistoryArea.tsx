@@ -20,6 +20,8 @@ interface ChatMessage {
 
 interface AI_action {
     id: number
+    msg_id: number | null
+    node_id: string
     title: string
     action: string
     description: string
@@ -41,7 +43,7 @@ const App: React.FC = () => {
     const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
     const messagesRef = useRef<ChatMessage[]>(messages);
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
-    const [selectedMessageId, setSelectedMessageId] = useState<number>(0);
+    const [selectedMessageId, setSelectedMessageId] = useState<number|null>(null);
     const [actions, setActions] = useState<AI_action[]>([]);
     // const socket = io('http://127.0.0.1:5010')
 
@@ -229,9 +231,29 @@ const App: React.FC = () => {
         }
     }
 
-    const handleTitleClick = (id: number) => {
-        setSelectedMessageId(id);
-        setValue('Chat');
+    const focusNodeById = (nodeId: string) => {
+        const node = figma.getNodeById(nodeId);
+      
+        if (node && node.type !== 'PAGE') {
+          // 将当前页面的选中节点设置为该节点
+          figma.currentPage.selection = [node as SceneNode];
+          
+          // 滚动并缩放到该节点，使其可见
+          figma.viewport.scrollAndZoomIntoView([node as SceneNode]);
+        } else {
+          console.error("Node not found or invalid node type");
+        }
+      };
+      
+
+    const handleTitleClick = (msg_id: number | null, node_id: string) => {
+        if(msg_id !== null){
+            setSelectedMessageId(msg_id);
+            setValue('Chat');
+        }
+        if(node_id !== ""){
+            focusNodeById(node_id)
+        }
     };
 
     function switchPage() {
