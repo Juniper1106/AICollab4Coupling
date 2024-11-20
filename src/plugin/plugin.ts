@@ -12,10 +12,11 @@ function startDocumentChangeTimer() {
 	setInterval(async () => {
 		// console.log(`已等待 ${(Date.now() - lastChangeTime)/1000} 秒无用户操作`);
 		if (Date.now() - lastChangeTime >= 15000) {
-			lastChangeTime = Date.now();
+			console.log('已等待15秒，发送inactive_change请求');
 			const response = await fetch('http://127.0.0.1:5010/inactive_change')
 			const res = await response.json()
 			console.log(res)
+			lastChangeTime = Date.now();
 		}
 	}, 1000); // 每秒输出一次消息
 	console.log('已设置定时器');

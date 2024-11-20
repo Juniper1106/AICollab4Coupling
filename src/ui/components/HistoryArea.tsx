@@ -51,11 +51,11 @@ const App: React.FC = () => {
         const intervalId = setInterval(async () => {
             // console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
             if (Date.now() - lastUpdateTime >= 15000) {
-                setLastUpdateTime(Date.now());
-                console.log('已等待15秒，发送inactive_change请求');
+                console.log('已等待15秒，发送inactive_update请求');
                 const response = await fetch('http://127.0.0.1:5010/inactive_update')
                 const res = await response.json()
                 console.log(res)
+                setLastUpdateTime(Date.now());
             }
         }, 1000); // 每秒检查一次
     
