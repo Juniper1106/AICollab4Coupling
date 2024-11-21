@@ -95,27 +95,22 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, scrollToMessageId }) =>
   };
 
   return (
-    <>
-      <div className='recentActionsArea'>
-          <CurrentAndUpcomingAction />
-      </div>
-      <div className={styles['chatHistory']}>
-        {messages.map(msg => (
-          <div
-              key={msg.id}
-              ref={(el) => {messageRefs.current[msg.id] = el}}
-              className={styles[`message-row-${msg.sender}`]}
-          >
-            <Message text={msg.text} img_url={msg.img_url} sender={msg.sender} />
-            {(msg.sender === 'received' || msg.sender === 'server') && (
-              <Dropdown menu={{ items, onClick: handleMenuClick(msg) }} >
-                <Button className={styles['icon-button']} shape="circle" type='text' icon={<EllipsisOutlined />} size='small' />
-              </Dropdown>
-            )}
-          </div>
-        ))}
-      </div>
-    </>
+    <div className={styles['chatHistory']}>
+      {messages.map(msg => (
+        <div
+            key={msg.id}
+            ref={(el) => {messageRefs.current[msg.id] = el}}
+            className={styles[`message-row-${msg.sender}`]}
+        >
+          <Message text={msg.text} img_url={msg.img_url} sender={msg.sender} />
+          {(msg.sender === 'received' || msg.sender === 'server') && (
+            <Dropdown menu={{ items, onClick: handleMenuClick(msg) }} >
+              <Button className={styles['icon-button']} shape="circle" type='text' icon={<EllipsisOutlined />} size='small' />
+            </Dropdown>
+          )}
+        </div>
+      ))}
+    </div>
   )
 }
 

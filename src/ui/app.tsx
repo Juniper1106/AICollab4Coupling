@@ -5,6 +5,7 @@ import { Input, Button } from 'antd';
 import "@ui/styles/main.scss";
 import SliderArea from "./components/SliderArea";
 import HistoryArea from "./components/HistoryArea";
+import CurrentAndUpcomingAction from "./components/CurrentAndUpcomingAction"
 import DropDownArea from './components/DropDownArea';
 import { CouplingStyleProvider } from '@ui/contexts/CouplingStyle';
 import { socket } from './components/socket';
@@ -54,6 +55,9 @@ function App() {
       <>
         <DropDownArea />
         <SliderArea />
+        <div className='recentActionsArea'>
+          <CurrentAndUpcomingAction />
+        </div>
         <HistoryArea />
       </>
     )
