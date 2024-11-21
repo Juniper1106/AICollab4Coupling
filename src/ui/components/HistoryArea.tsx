@@ -95,9 +95,9 @@ const App: React.FC = () => {
         setMessages(prevMessages => [...prevMessages, reply])
         setSelectedMessageId(data["id"])
         const action = actions.find(action => action.msg_id === data["id"]);
-        if (couplingStyle === 'SIDC') {
+        if (couplingStyleRef.current === 'SIDC') {
             NetworkMessages.ADD_CONTENT.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
-        } else if (couplingStyle === 'SGP') {
+        } else if (couplingStyleRef.current === 'SGP') {
             NetworkMessages.ADD_CONTENT_IN_AI.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
         }
     }
