@@ -35,6 +35,7 @@ interface AI_action {
 
 const App: React.FC = () => {
     const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
+    const couplingStyleRef = useRef(couplingStyle);         // 用 useRef 保存 couplingStyle 的引用
 
     const [value, setValue] = useState('History');
     const [inputText, setInputText] = useState('');
@@ -50,11 +51,11 @@ const App: React.FC = () => {
         const intervalId = setInterval(async () => {
             // console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
             if (Date.now() - lastUpdateTime >= 15000) {
-                setLastUpdateTime(Date.now());
-                console.log('已等待15秒，发送inactive_change请求');
+                console.log('已等待15秒，发送inactive_update请求');
                 const response = await fetch('http://127.0.0.1:5010/inactive_update')
                 const res = await response.json()
                 console.log(res)
+                setLastUpdateTime(Date.now());
             }
         }, 1000); // 每秒检查一次
     
@@ -80,48 +81,56 @@ const App: React.FC = () => {
         restoreData()
     }, [])
 
-    useEffect(() => {
-        // 连接后端并监听消息
-        socket.on('AI_message', (data) => {
-            const reply: ChatMessage = {
-                id: data["id"],
-                text: data["text"],
-                img_url: data["img_url"],
-                sender: 'server'
-            }
-            if (couplingStyle != 'SGP') {
-                const audio = new Audio(notifyAudio);
-                audio.play();
-            } 
-            setMessages(prevMessages => [...prevMessages, reply])
-            setSelectedMessageId(data["id"])
-            const action = actions.find(action => action.msg_id === data["id"]);
-            if (couplingStyle === 'SIDC') {
-                NetworkMessages.ADD_CONTENT.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
-            } else if (couplingStyle === 'SGP') {
-                NetworkMessages.ADD_CONTENT_IN_AI.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
-            }
-        });
-
-        socket.on('AI_conclude', async (data) => {
-            NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: data["text"], img_url: data["img_url"] })
+    const handleAIMessage = (data: any) => {
+        const reply: ChatMessage = {
+            id: data["id"],
+            text: data["text"],
+            img_url: data["img_url"],
+            sender: 'server'
+        }
+        if (couplingStyleRef.current != 'SGP') {
             const audio = new Audio(notifyAudio);
             audio.play();
-            
-            // 获取最后两条‘received’消息
-            console.log("all messages:", messagesRef.current);
-            const receivedMessages = messagesRef.current.filter(msg => msg.sender === 'received');
-            const lastTwoReceived = receivedMessages.slice(-2);
-            
-            for (const msg of lastTwoReceived) {
-                if (msg.img_url) {
-                    NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: "", img_url: msg.img_url });
-                    const audio = new Audio(notifyAudio);
-                    audio.play();
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
+        } 
+        setMessages(prevMessages => [...prevMessages, reply])
+        setSelectedMessageId(data["id"])
+        const action = actions.find(action => action.msg_id === data["id"]);
+        if (couplingStyle === 'SIDC') {
+            NetworkMessages.ADD_CONTENT.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
+        } else if (couplingStyle === 'SGP') {
+            NetworkMessages.ADD_CONTENT_IN_AI.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
+        }
+    }
+
+    const handleAIConclude = async (data: any) => {
+        NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: data["text"], img_url: data["img_url"] })
+        const audio = new Audio(notifyAudio);
+        audio.play();
+
+        // 获取最后两条‘received’消息
+        console.log("all messages:", messagesRef.current);
+        const receivedMessages = messagesRef.current.filter(msg => msg.sender === 'received');
+        const lastTwoReceived = receivedMessages.slice(-2);
+        
+        for (const msg of lastTwoReceived) {
+            if (msg.img_url) {
+                NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: "", img_url: msg.img_url });
+                const audio = new Audio(notifyAudio);
+                audio.play();
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
-        });
+        }
+    }
+
+    useEffect(() => {
+        couplingStyleRef.current = couplingStyle;           // 每次 couplingStyle 更新时，同步到 ref
+    }, [couplingStyle]);
+
+    useEffect(() => {
+        // 连接后端并监听消息
+        socket.on('AI_message', handleAIMessage);
+
+        socket.on('AI_conclude', handleAIConclude);
 
         socket.on('AI_action', (data) => {
             setActions(prevActions => [data, ...prevActions])
@@ -180,10 +189,8 @@ const App: React.FC = () => {
             img_url: receivedData.image,
             sender: 'received'
         }
-        if (couplingStyle === 'DISC' || couplingStyle === '待机' || couplingStyle === 'SIDC') {
-            const audio = new Audio(notifyAudio);
-            audio.play();
-        }
+        const audio = new Audio(notifyAudio);
+        audio.play();
         // setMessages(prevMessages => [...prevMessages, reply])
         // 替换掉最后一个loading消息为真实的回复
         setMessages(prevMessages => {
