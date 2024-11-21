@@ -4,6 +4,7 @@ import { PingMessage } from "@common/network/messages/PingMessage";
 import { AddContentInAI } from "@common/network/messages/AddContentInAI";
 import { AddContent } from "@common/network/messages/AddContent";
 import { NetworkSide } from "@common/network/sides";
+import { FindNode } from "./messages/FindNode";
 import * as Networker from "monorepo-networker";
 
 export namespace NetworkMessages {
@@ -19,6 +20,10 @@ export namespace NetworkMessages {
 
   export const CREATE_RECT = registry.register(
     new CreateRectMessage("create-rect")
+  );
+
+  export const FIND_NODE = registry.register(
+    new FindNode("find-node")
   );
 
   export const ADD_CONTENT_IN_AI = registry.register(

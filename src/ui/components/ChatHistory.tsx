@@ -79,12 +79,12 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, scrollToMessageId }) =>
       console.log(res)
     }
     if (e.key === '1') {
-      NetworkMessages.ADD_CONTENT.send({ text: msg.text, img_url: msg.img_url })
+      NetworkMessages.ADD_CONTENT.send({ id: undefined, server: false, text: msg.text, img_url: msg.img_url })
       commitUserAttitude(msg, true)
       const audio = new Audio(notifyAudio);
       audio.play();
     } else if (e.key === '2') {
-      NetworkMessages.ADD_CONTENT_IN_AI.send({ text: msg.text, img_url: msg.img_url })
+      NetworkMessages.ADD_CONTENT_IN_AI.send({ id: undefined, server: false, text: msg.text, img_url: msg.img_url })
       commitUserAttitude(msg, true)
       const audio = new Audio(notifyAudio);
       audio.play();

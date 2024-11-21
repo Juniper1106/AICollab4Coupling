@@ -63,12 +63,6 @@ const App: React.FC = () => {
       }, [lastUpdateTime]);
     
     useEffect(() => {
-        socket.on('AI_action', (data) => {
-            setActions(prevActions => [data, ...prevActions])
-        })
-    }, [])
-
-    useEffect(() => {
         messagesRef.current = messages;
     }, [messages]);
 
@@ -101,15 +95,16 @@ const App: React.FC = () => {
             } 
             setMessages(prevMessages => [...prevMessages, reply])
             setSelectedMessageId(data["id"])
+            const action = actions.find(action => action.msg_id === data["id"]);
             if (couplingStyle === 'SIDC') {
-                NetworkMessages.ADD_CONTENT.send({ text: data["text"], img_url: data["img_url"] });
+                NetworkMessages.ADD_CONTENT.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
             } else if (couplingStyle === 'SGP') {
-                NetworkMessages.ADD_CONTENT_IN_AI.send({ text: data["text"], img_url: data["img_url"] });
+                NetworkMessages.ADD_CONTENT_IN_AI.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
             }
         });
 
         socket.on('AI_conclude', async (data) => {
-            NetworkMessages.ADD_CONTENT.send({ text: data["text"], img_url: data["img_url"] })
+            NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: data["text"], img_url: data["img_url"] })
             const audio = new Audio(notifyAudio);
             audio.play();
             
@@ -120,12 +115,26 @@ const App: React.FC = () => {
             
             for (const msg of lastTwoReceived) {
                 if (msg.img_url) {
-                    NetworkMessages.ADD_CONTENT.send({ text: "", img_url: msg.img_url });
+                    NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: "", img_url: msg.img_url });
                     const audio = new Audio(notifyAudio);
                     audio.play();
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
+        });
+
+        socket.on('AI_action', (data) => {
+            setActions(prevActions => [data, ...prevActions])
+        });
+
+        socket.on('update_action', (data) => {
+            setActions(prevActions =>
+                prevActions.map(action => 
+                    action.id === data['action_id']
+                        ? { ...action, node_id: data['node_id'] } // 替换 node_id 的新对象
+                        : action // 其他元素保持不变
+                )
+            );
         });
 
         socket.on('reload', async () => {
@@ -222,22 +231,7 @@ const App: React.FC = () => {
             setSelectedMessageId(new_id["id"])
             gptChatFunction(newMessage.text)
         }
-    }
-
-    const focusNodeById = (nodeId: string) => {
-        const node = figma.getNodeById(nodeId);
-      
-        if (node && node.type !== 'PAGE') {
-          // 将当前页面的选中节点设置为该节点
-          figma.currentPage.selection = [node as SceneNode];
-          
-          // 滚动并缩放到该节点，使其可见
-          figma.viewport.scrollAndZoomIntoView([node as SceneNode]);
-        } else {
-          console.error("Node not found or invalid node type");
-        }
-      };
-      
+    }      
 
     const handleTitleClick = (msg_id: number | null, node_id: string) => {
         if(msg_id !== null){
@@ -245,7 +239,7 @@ const App: React.FC = () => {
             setValue('Chat');
         }
         if(node_id !== ""){
-            focusNodeById(node_id)
+            NetworkMessages.FIND_NODE.send({ nodeId: node_id });
         }
     };
 

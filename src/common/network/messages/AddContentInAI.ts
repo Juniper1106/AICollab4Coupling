@@ -1,7 +1,10 @@
 import { NetworkSide } from "@common/network/sides";
 import * as Networker from "monorepo-networker";
+import { socket } from "@ui/components/socket";
 
 interface Payload {
+  id: number | undefined,
+  server: boolean,
   text: string,
   img_url: string
 }
@@ -30,6 +33,10 @@ export class AddContentInAI extends Networker.MessageType<Payload> {
         //在AI workspace中添加文本框
         const nodes = aiWorkspace.children;
         const text = figma.createText()
+        if (payload.server){
+          const node_id = text.id
+          socket.emit("addContent", {"action_id": payload.id, "node_id": node_id})
+        }
         text.characters = payload.text
         // 设置文本框最大宽度
         const width = text.width>320?320:text.width
@@ -46,6 +53,10 @@ export class AddContentInAI extends Networker.MessageType<Payload> {
   
         // 创建图片节点并设置图片填充
         const imageNode = figma.createRectangle();
+        if (payload.server){
+          const node_id = imageNode.id
+          socket.emit("addContent", {"action_id": payload.id, "node_id": node_id})
+        }
         imageNode.resize(160, 160); // 设置图片大小，可以根据需求调整
         imageNode.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: image.hash }];
         imageNode.name = 'image'

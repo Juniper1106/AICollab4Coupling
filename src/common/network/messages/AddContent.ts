@@ -1,7 +1,10 @@
 import { NetworkSide } from "@common/network/sides";
+import { socket } from "@ui/components/socket";
 import * as Networker from "monorepo-networker";
 
 interface Payload {
+  id: number | undefined,
+  server: boolean,
   text: string,
   img_url: string
 }
@@ -58,6 +61,10 @@ export class AddContent extends Networker.MessageType<Payload> {
       if (payload.text !== '') {
         //在figma中创建文本框
         const text = figma.createText()
+        if (payload.server){
+          const node_id = text.id
+          socket.emit("addContent", {"action_id": payload.id, "node_id": node_id})
+        }
         text.characters = payload.text
         text.x = posX;
         text.y = posY;
@@ -90,6 +97,10 @@ export class AddContent extends Networker.MessageType<Payload> {
 
         // 创建图片节点并设置图片填充
         const imageNode = figma.createRectangle();
+        if (payload.server){
+          const node_id = imageNode.id
+          socket.emit("addContent", {"action_id": payload.id, "node_id": node_id})
+        }
         imageNode.resize(160, 160); // 设置图片大小，可以根据需求调整
         imageNode.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: image.hash }];
         imageNode.name = 'image'
