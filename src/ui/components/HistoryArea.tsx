@@ -45,6 +45,7 @@ const App: React.FC = () => {
     // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
     const [selectedMessageId, setSelectedMessageId] = useState<number|null>(null);
     const [actions, setActions] = useState<AI_action[]>([]);
+    const actionsRef = useRef<AI_action[]>(actions);
     // const socket = io('http://127.0.0.1:5010')
 
     useEffect(() => {
@@ -66,6 +67,10 @@ const App: React.FC = () => {
     useEffect(() => {
         messagesRef.current = messages;
     }, [messages]);
+
+    useEffect(() => {
+        actionsRef.current = actions;
+    }, [actions]);
 
     const restoreData = async () => {
         const msg_response = await fetch('http://127.0.0.1:5010/getMessages')
@@ -94,10 +99,10 @@ const App: React.FC = () => {
         } 
         setMessages(prevMessages => [...prevMessages, reply])
         setSelectedMessageId(data["id"])
-        const action = actions.find(action => action.msg_id === data["id"]);
-        if (couplingStyle === 'SIDC') {
+        const action = actionsRef.current.find(action => action.msg_id === data["id"]);
+        if (couplingStyleRef.current === 'SIDC') {
             NetworkMessages.ADD_CONTENT.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
-        } else if (couplingStyle === 'SGP') {
+        } else if (couplingStyleRef.current === 'SGP') {
             NetworkMessages.ADD_CONTENT_IN_AI.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
         }
     }

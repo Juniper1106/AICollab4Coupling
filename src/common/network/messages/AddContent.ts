@@ -1,5 +1,4 @@
 import { NetworkSide } from "@common/network/sides";
-import { socket } from "@ui/components/socket";
 import * as Networker from "monorepo-networker";
 
 interface Payload {
@@ -63,7 +62,16 @@ export class AddContent extends Networker.MessageType<Payload> {
         const text = figma.createText()
         if (payload.server){
           const node_id = text.id
-          socket.emit("addContent", {"action_id": payload.id, "node_id": node_id})
+          const sendData = {"action_id": payload.id, "node_id": node_id}
+          const response = await fetch('http://127.0.0.1:5010/addContent', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json', // 设置请求头为 JSON
+              },
+              body: JSON.stringify(sendData), // 将数据对象转换为 JSON 字符串并发送
+          })
+
+          const receivedData = await response.json()
         }
         text.characters = payload.text
         text.x = posX;
@@ -99,7 +107,16 @@ export class AddContent extends Networker.MessageType<Payload> {
         const imageNode = figma.createRectangle();
         if (payload.server){
           const node_id = imageNode.id
-          socket.emit("addContent", {"action_id": payload.id, "node_id": node_id})
+          const sendData = {"action_id": payload.id, "node_id": node_id}
+          const response = await fetch('http://127.0.0.1:5010/addContent', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json', // 设置请求头为 JSON
+              },
+              body: JSON.stringify(sendData), // 将数据对象转换为 JSON 字符串并发送
+          })
+
+          const receivedData = await response.json()
         }
         imageNode.resize(160, 160); // 设置图片大小，可以根据需求调整
         imageNode.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: image.hash }];
