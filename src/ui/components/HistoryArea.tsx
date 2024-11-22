@@ -111,6 +111,7 @@ const App: React.FC = () => {
         NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: data["text"], img_url: data["img_url"] })
         const audio = new Audio(notifyAudio);
         audio.play();
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // 获取最后两条‘received’消息
         console.log("all messages:", messagesRef.current);
