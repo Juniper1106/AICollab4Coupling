@@ -107,11 +107,15 @@ const App: React.FC = () => {
         }
     }
 
+    const playAudio = async () => {
+        const audio = new Audio(notifyAudio);
+        await audio.play();
+    }
+
     const handleAIConclude = async (data: any) => {
         NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: data["text"], img_url: data["img_url"] })
-        const audio = new Audio(notifyAudio);
-        audio.play();
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await playAudio();
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // 获取最后两条‘received’消息
         console.log("all messages:", messagesRef.current);
@@ -121,9 +125,8 @@ const App: React.FC = () => {
         for (const msg of lastTwoReceived) {
             if (msg.img_url) {
                 NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: "", img_url: msg.img_url });
-                const audio = new Audio(notifyAudio);
-                audio.play();
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await playAudio();
             }
         }
     }
