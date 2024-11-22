@@ -22,9 +22,6 @@ const HistoryActions: React.FC<ActionProps> = ( {actions, onTitleClick} ) => {
     return (
         <div className='historyActions'>
           <Title level={5}>AI行为历史</Title>
-          <div className='recentActionsArea'>
-            <CurrentAndUpcomingAction />
-          </div>
           <List
             itemLayout="horizontal"
             dataSource={actions}
