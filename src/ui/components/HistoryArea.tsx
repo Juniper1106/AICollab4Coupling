@@ -5,7 +5,8 @@ import '@ui/components/HistoryArea.scss'
 import HistoryActions from "./HistoryActions";
 import ChatHistory from "./ChatHistory"
 import { socket } from './socket';
-import notifyAudio from '@ui/assets/audio/notify.mp3'
+import notifyAudioNewMessage from '@ui/assets/audio/new_message.mp3'
+import notifyAudioEditCanvas from '@ui/assets/audio/edit_canvas.mp3'
 import { NetworkMessages } from '@common/network/messages';
 import { useCouplingStyle } from '@ui/contexts/CouplingStyle';
 
@@ -94,7 +95,7 @@ const App: React.FC = () => {
             sender: 'server'
         }
         if (couplingStyleRef.current != 'SGP') {
-            const audio = new Audio(notifyAudio);
+            const audio = new Audio(notifyAudioNewMessage);
             audio.play();
         } 
         setMessages(prevMessages => [...prevMessages, reply])
@@ -107,14 +108,14 @@ const App: React.FC = () => {
         }
     }
 
-    const playAudio = async () => {
-        const audio = new Audio(notifyAudio);
+    const playAudioEditCanvas = async () => {
+        const audio = new Audio(notifyAudioEditCanvas);
         await audio.play();
     }
 
     const handleAIConclude = async (data: any) => {
         NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: data["text"], img_url: data["img_url"] })
-        await playAudio();
+        await playAudioEditCanvas();
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         // 获取最后两条‘received’消息
@@ -126,7 +127,7 @@ const App: React.FC = () => {
             if (msg.img_url) {
                 NetworkMessages.ADD_CONTENT.send({ id: data["id"], server: true, text: "", img_url: msg.img_url });
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                await playAudio();
+                await playAudioEditCanvas();
             }
         }
     }
@@ -198,7 +199,7 @@ const App: React.FC = () => {
             img_url: receivedData.image,
             sender: 'received'
         }
-        const audio = new Audio(notifyAudio);
+        const audio = new Audio(notifyAudioNewMessage);
         audio.play();
         // setMessages(prevMessages => [...prevMessages, reply])
         // 替换掉最后一个loading消息为真实的回复

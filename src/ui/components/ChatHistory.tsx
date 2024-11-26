@@ -4,7 +4,7 @@ import styles from '@ui/components/ChatHistory.module.scss'
 import { RetweetOutlined, EllipsisOutlined } from '@ant-design/icons'
 import Message from './Message'
 import { NetworkMessages } from "@common/network/messages";
-import notifyAudio from '@ui/assets/audio/notify.mp3'
+import notifyAudioEditCanvas from '@ui/assets/audio/edit_canvas.mp3'
 import CurrentAndUpcomingAction from "./CurrentAndUpcomingAction"
 
 interface ChatMessage {
@@ -82,12 +82,12 @@ const ChatHistory: React.FC<ChatBoxProps> = ({ messages, scrollToMessageId }) =>
     if (e.key === '1') {
       NetworkMessages.ADD_CONTENT.send({ id: undefined, server: false, text: msg.text, img_url: msg.img_url })
       commitUserAttitude(msg, true)
-      const audio = new Audio(notifyAudio);
+      const audio = new Audio(notifyAudioEditCanvas);
       audio.play();
     } else if (e.key === '2') {
       NetworkMessages.ADD_CONTENT_IN_AI.send({ id: undefined, server: false, text: msg.text, img_url: msg.img_url })
       commitUserAttitude(msg, true)
-      const audio = new Audio(notifyAudio);
+      const audio = new Audio(notifyAudioEditCanvas);
       audio.play();
     } else if (e.key === '3') {
       commitUserAttitude(msg, false)
