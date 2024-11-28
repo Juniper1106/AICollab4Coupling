@@ -24,7 +24,7 @@ function startDocumentChangeTimer() {
 
 async function getCanvasScreenshot() {
 	const image = await figma.currentPage.exportAsync({
-		format: 'PNG', // 可选择 PNG 或 JPG
+		format: 'JPG', // 可选择 PNG 或 JPG
 		constraint: {
 			type: 'HEIGHT', // 可选择 HEIGHT, WIDTH 或 SCALE
 			value: 1024 // 缩放比例
@@ -45,7 +45,7 @@ async function getSelectionScreenshot() {
 		return null;
 	}
 	const image = await lastSelection[0].exportAsync({
-		format: 'PNG', // 可选择 PNG 或 JPG
+		format: 'JPG', // 可选择 PNG 或 JPG
 		constraint: {
 			type: 'HEIGHT',
 			value: 1024 // 缩放比例
