@@ -182,7 +182,7 @@ const App: React.FC = () => {
         setSelectedMessageId(id["id"])
 
         // 创建要发送的数据对象
-        const sendData = { "id": loadingMessage.id, "prompt": question }
+        const sendData = { "id": loadingMessage.id, "prompt": question, "timeStamp": new Date().getTime()}
         const response = await fetch('http://127.0.0.1:5010/chat', {
             method: 'POST',
             headers: {
