@@ -27,13 +27,12 @@ interface AI_action {
     description: string
 }
 
-// const UserAttitudeTest: ChatMessage = {
-//     text: '为了设计番茄采摘机器人，建议设计GPS导航模块',
-//     img_url: 'https://img79.jc35.com/9/20210928/637684201785624684382.jpg',
-//     sender: 'received'
-// }
+interface HistoryAreaProps {
+    actions: AI_action[]
+    setNextAction: (action: string) => void
+}
 
-const App: React.FC = () => {
+const App: React.FC<HistoryAreaProps> = ({actions, setNextAction}) => {
     const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
     const couplingStyleRef = useRef(couplingStyle);         // 用 useRef 保存 couplingStyle 的引用
 
@@ -42,11 +41,8 @@ const App: React.FC = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
     const messagesRef = useRef<ChatMessage[]>(messages);
-    // const [messages, setMessages] = useState<ChatMessage[]>([UserAttitudeTest]);
     const [selectedMessageId, setSelectedMessageId] = useState<number|null>(null);
-    const [actions, setActions] = useState<AI_action[]>([]);
     const actionsRef = useRef<AI_action[]>(actions);
-    // const socket = io('http://127.0.0.1:5010')
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
@@ -69,6 +65,7 @@ const App: React.FC = () => {
     }, [messages]);
 
     useEffect(() => {
+        console.log(actions)
         actionsRef.current = actions;
     }, [actions]);
 
@@ -76,9 +73,6 @@ const App: React.FC = () => {
         const msg_response = await fetch('http://127.0.0.1:5010/getMessages')
         const savedMsg = await msg_response.json()
         setMessages(savedMsg)
-        const action_response = await fetch('http://127.0.0.1:5010/getActions')
-        const savedAction = await action_response.json()
-        setActions(savedAction)
     }
 
     useEffect(() => {
@@ -140,20 +134,6 @@ const App: React.FC = () => {
         socket.on('AI_message', handleAIMessage);
 
         socket.on('AI_conclude', handleAIConclude);
-
-        socket.on('AI_action', (data) => {
-            setActions(prevActions => [data, ...prevActions])
-        });
-
-        socket.on('update_action', (data) => {
-            setActions(prevActions =>
-                prevActions.map(action => 
-                    action.id === data['action_id']
-                        ? { ...action, node_id: data['node_id'] } // 替换 node_id 的新对象
-                        : action // 其他元素保持不变
-                )
-            );
-        });
 
         socket.on('reload', async () => {
             restoreData()
@@ -233,6 +213,7 @@ const App: React.FC = () => {
     const handleSend = async (txt:string) => {
         if (txt !== '') {
             setValue('Chat')
+            setNextAction("生成回复")
             const response = await fetch('http://127.0.0.1:5010/getMsgId')
             const new_id = await response.json()
             const newMessage: ChatMessage = {
@@ -247,7 +228,7 @@ const App: React.FC = () => {
             setSelectedMessageId(new_id["id"])
             gptChatFunction(newMessage.text)
         }
-    }      
+    }
 
     const handleTitleClick = (msg_id: number | null, node_id: string) => {
         if(msg_id !== null){
@@ -261,7 +242,7 @@ const App: React.FC = () => {
 
     function switchPage() {
         if (value === 'History') {
-            return <HistoryActions actions={actions} onTitleClick={handleTitleClick} />;
+            return <HistoryActions actions={actionsRef.current} onTitleClick={handleTitleClick} />;
         } else {
             return <ChatHistory messages={messages} scrollToMessageId={selectedMessageId}/>
         }

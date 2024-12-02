@@ -10,6 +10,15 @@ import DropDownArea from './components/DropDownArea';
 import { CouplingStyleProvider } from '@ui/contexts/CouplingStyle';
 import { socket } from './components/socket';
 
+interface AI_action {
+  id: number
+  msg_id: number | null
+  node_id: string
+  title: string
+  action: string
+  description: string
+}
+
 function App() {
   const [login, setLogin] = useState(false);
 
@@ -48,6 +57,60 @@ function App() {
     )
   };
 
+  const [actions, setActions] = useState<AI_action[]>([]);
+  const [latestAction, setLatestAction] = useState<AI_action | null>(null);
+  const [isLatestActionFinish, setIsLatestActionFinish] = useState<boolean>(true);
+  const [isLatestActionSuccess, setIsLatestActionSuccess] = useState<boolean>(true);
+  const [nextAction, setNextAction] = useState<string>("主动交流");
+
+  const restoreActions = async () => {
+    const action_response = await fetch('http://127.0.0.1:5010/getActions')
+    const savedAction = await action_response.json()
+    setActions(savedAction)
+  }
+
+  useEffect(() => {
+    restoreActions()
+  }, [])
+
+  useEffect(() => {
+    // 连接后端并监听消息
+    socket.on('AI_action', (data) => {
+      setIsLatestActionFinish(false)
+      setLatestAction(data);
+      setNextAction("主动交流")
+    });
+
+    socket.on('update_action', (data) => {
+        setActions(prevActions =>
+            prevActions.map(action => 
+                action.id === data['action_id']
+                    ? { ...action, node_id: data['node_id'] } // 替换 node_id 的新对象
+                    : action // 其他元素保持不变
+            )
+        );
+    });
+
+    socket.on('AI_action_finish', (data) => {
+      console.log(data)
+      console.log(latestAction)
+      if(data['id'] === latestAction?.id){
+        setIsLatestActionFinish(true)
+        setIsLatestActionSuccess(data['success'])
+      }
+      if (latestAction) {
+        setActions(prevActions => {
+          const updatedActions = [latestAction, ...prevActions];
+            return updatedActions;
+        });
+      }
+    });
+
+    socket.on('edit_canvas', () => {
+      setNextAction("编辑画布")
+    })
+  }, [latestAction]);
+
   function switchPage() {
     if (login === false)
       return <LoginPageForProbe />
@@ -56,9 +119,9 @@ function App() {
         <DropDownArea />
         <SliderArea />
         <div className='recentActionsArea'>
-          <CurrentAndUpcomingAction />
+          <CurrentAndUpcomingAction currentAction={latestAction} isCurrentActionFinish={isLatestActionFinish} isCurrentActionSuccess={isLatestActionSuccess} nextAction={nextAction}/>
         </div>
-        <HistoryArea />
+        <HistoryArea actions={actions} setNextAction={setNextAction}/>
       </>
     )
   }

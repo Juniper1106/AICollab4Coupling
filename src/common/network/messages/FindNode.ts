@@ -26,6 +26,7 @@ export class FindNode extends Networker.MessageType<Payload> {
                 // 滚动并缩放到该节点，使其可见
                 figma.viewport.scrollAndZoomIntoView([node as SceneNode]);
             } else {
+                figma.notify('未找到对应内容！');
                 console.error("Node not found or invalid node type");
             }
         } catch (error) {
