@@ -96,7 +96,7 @@ const App: React.FC<HistoryAreaProps> = ({actions, setNextAction}) => {
         setSelectedMessageId(data["id"])
         const action = actionsRef.current.find(action => action.msg_id === data["id"]);
         if (couplingStyleRef.current === 'SIDC') {
-            NetworkMessages.ADD_CONTENT.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
+            NetworkMessages.ADD_CONTENT_IN_AI.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
         } else if (couplingStyleRef.current === 'SGP') {
             NetworkMessages.ADD_CONTENT_IN_AI.send({ id: action?.id, server: true, text: data["text"], img_url: data["img_url"] });
         }
