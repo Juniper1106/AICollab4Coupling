@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Dropdown, Space, Typography, Button, Tooltip } from 'antd';
@@ -6,6 +6,7 @@ import { TeamOutlined, ReloadOutlined, CloseOutlined } from "@ant-design/icons";
 import { useCouplingStyle, useCouplingStyleUpdate } from '@ui/contexts/CouplingStyle';
 import "@ui/components/DropDownArea.scss";
 import { socket } from './socket';
+import notifyAudioStyleChangeTimeout from '@ui/assets/audio/style_change_timeout.mp3';
 
 const items: MenuProps['items'] = [
   {
@@ -29,9 +30,25 @@ const items: MenuProps['items'] = [
 const DropDownArea: React.FC = () => {
   const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
   const setCouplingStyle = useCouplingStyleUpdate();      // 获取更新 CouplingStyle 的方法
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
 
+  useEffect(() => {
+      const intervalId = setInterval(async () => {
+          if (Date.now() - lastUpdateTime >= 90000) {
+              console.log('已等待90秒，发送inactive_update请求');
+              const audio = new Audio(notifyAudioStyleChangeTimeout);
+              audio.play();
+              setLastUpdateTime(Date.now());
+          }
+      }, 1000); // 每秒检查一次
+  
+      // 清除定时器
+      return () => clearInterval(intervalId);
+    }, [lastUpdateTime]);
+    
   const handleMenuClick: MenuProps['onClick'] = async (e) => {
     setCouplingStyle(e.key);  // 使用全局更新方法更新 CouplingStyle
+    setLastUpdateTime(Date.now());
     await fetch(
       'http://127.0.0.1:5010/style_change',
       {
