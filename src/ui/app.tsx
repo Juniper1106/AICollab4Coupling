@@ -24,10 +24,11 @@ function App() {
 
   const LoginPageForProbe: React.FC = () => {
     const [userName, setUserName] = useState('');
+    const [task, setTask] = useState('');
 
-    async function handleLogin(username: string) {
+    async function handleLogin(username: string, task: string) {
       if (login === false) {
-        const sendData = { "username": username }
+        const sendData = { "username": username, "task": task }
         const response = await fetch('http://127.0.0.1:5010/login', {
           method: 'POST',
           headers: {
@@ -51,8 +52,10 @@ function App() {
       <div className="loginPageForProbe">
         <Input size="large" placeholder="请输入被试编号" prefix={<UserOutlined />} value={userName} onChange={(e) => setUserName(e.target.value)} />
         <br />
+        <Input size="large" placeholder="请输入任务内容" value={task} onChange={(e) => setTask(e.target.value)} />
         <br />
-        <Button type="primary" onClick={() => { handleLogin(userName) }}>提交</Button>
+        <br />
+        <Button type="primary" onClick={() => { handleLogin(userName, task) }}>提交</Button>
       </div>
     )
   };
