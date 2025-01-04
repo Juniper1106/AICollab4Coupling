@@ -5,6 +5,7 @@ import { AddContentInAI } from "@common/network/messages/AddContentInAI";
 import { AddContent } from "@common/network/messages/AddContent";
 import { NetworkSide } from "@common/network/sides";
 import { FindNode } from "./messages/FindNode";
+import { NotifyStyleChange } from "./messages/notifyStyleChange";
 import * as Networker from "monorepo-networker";
 
 export namespace NetworkMessages {
@@ -32,5 +33,9 @@ export namespace NetworkMessages {
 
   export const ADD_CONTENT = registry.register(
     new AddContent("add-content")
+  );
+
+  export const NOTIFY_STYLE_CHANGE = registry.register(
+    new NotifyStyleChange("notify-style-change")
   );
 }

@@ -7,6 +7,7 @@ import { useCouplingStyle, useCouplingStyleUpdate } from '@ui/contexts/CouplingS
 import "@ui/components/DropDownArea.scss";
 import { socket } from './socket';
 import notifyAudioStyleChangeTimeout from '@ui/assets/audio/style_change_timeout.mp3';
+import { NetworkMessages } from '@common/network/messages';
 
 const items: MenuProps['items'] = [
   {
@@ -38,13 +39,15 @@ const DropDownArea: React.FC = () => {
               console.log('已等待90秒，发送inactive_update请求');
               const audio = new Audio(notifyAudioStyleChangeTimeout);
               audio.play();
+              NetworkMessages.NOTIFY_STYLE_CHANGE.send({ message: "状态调整提醒，调整后请大声思考", timeout: 3000});
+
               setLastUpdateTime(Date.now());
-          }
-      }, 1000); // 每秒检查一次
-  
-      // 清除定时器
+            }
+          }, 1000); // 每秒检查一次
+
+          // 清除定时器
       return () => clearInterval(intervalId);
-    }, [lastUpdateTime]);
+  }, [lastUpdateTime]);
     
   const handleMenuClick: MenuProps['onClick'] = async (e) => {
     setCouplingStyle(e.key);  // 使用全局更新方法更新 CouplingStyle
