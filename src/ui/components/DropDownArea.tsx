@@ -12,19 +12,19 @@ import { NetworkMessages } from '@common/network/messages';
 const items: MenuProps['items'] = [
   {
     key: 'DISC',
-    label: 'DISC',
+    label: '讨论模式',
   },
   {
     key: '待机',
-    label: '待机',
+    label: '待机模式',
   },
   {
     key: 'SIDC',
-    label: 'SIDC',
+    label: '轻量协作模式',
   },
   {
     key: 'SGP',
-    label: 'SGP',
+    label: '独立工作模式',
   }
 ];
 
@@ -82,7 +82,7 @@ const DropDownArea: React.FC = () => {
     <div className="dropDownContainer">
       <div className='label'>
         <TeamOutlined />
-        <Typography>耦合范式</Typography>
+        <Typography>协作模式</Typography>
       </div>
       <Dropdown
         menu={{
