@@ -22,6 +22,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "antd": "^5.20.6",
+    "lodash": "^4.17.21",
     "monorepo-networker": "^1.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.83.0",
+    "@types/lodash": "^4.17.14",
     "@types/node": "^18.15.11",
     "@types/postcss-url": "^10.0.0",
     "@types/react": "^18.0.28",

@@ -11,7 +11,10 @@ let lastChangeTime = Date.now();
 function startDocumentChangeTimer() {
 	setInterval(async () => {
 		// console.log(`已等待 ${(Date.now() - lastChangeTime)/1000} 秒无用户操作`);
-		if (Date.now() - lastChangeTime >= 15000) {
+		const response = await fetch('http://127.0.0.1:5010/get_standby_interval')
+		const res = await response.json()
+		console.log("Now interval is", res.interval)
+		if (Date.now() - lastChangeTime >= res.interval) {
 			console.log('已等待15秒，发送inactive_change请求');
 			const response = await fetch('http://127.0.0.1:5010/inactive_change')
 			const res = await response.json()

@@ -8,6 +8,7 @@ import "@ui/components/DropDownArea.scss";
 import { socket } from './socket';
 import notifyAudioStyleChangeTimeout from '@ui/assets/audio/style_change_timeout.mp3';
 import { NetworkMessages } from '@common/network/messages';
+import { useProactiveIntervalUpdate } from '@ui/contexts/ProactiveInterval';
 
 const items: MenuProps['items'] = [
   {
@@ -31,6 +32,7 @@ const items: MenuProps['items'] = [
 const DropDownArea: React.FC = () => {
   const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
   const setCouplingStyle = useCouplingStyleUpdate();      // 获取更新 CouplingStyle 的方法
+  const setProactiveInterval = useProactiveIntervalUpdate();
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
 
   useEffect(() => {
@@ -62,9 +64,13 @@ const DropDownArea: React.FC = () => {
         body: JSON.stringify({style: e.key})
       }
     ).then(
-      response => response.text()
+      response => response.json()
     ).then(
-      text => console.log(text)
+      res => {
+        console.log(res.message)
+        console.log(res.proactive_interval)
+        setProactiveInterval(res.proactive_interval)
+      }
     ).catch(
       error => console.error(error)
     )

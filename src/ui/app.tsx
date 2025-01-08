@@ -8,6 +8,7 @@ import HistoryArea from "./components/HistoryArea";
 import CurrentAndUpcomingAction from "./components/CurrentAndUpcomingAction"
 import DropDownArea from './components/DropDownArea';
 import { CouplingStyleProvider } from '@ui/contexts/CouplingStyle';
+import { ProactiveIntervalProvider } from './contexts/ProactiveInterval';
 import { socket } from './components/socket';
 
 interface AI_action {
@@ -131,9 +132,11 @@ function App() {
 
   return (
     <CouplingStyleProvider>
-      <div className="homepage">
-        {switchPage()}
-      </div>
+      <ProactiveIntervalProvider>
+        <div className="homepage">
+          {switchPage()}
+        </div>
+      </ProactiveIntervalProvider>
     </CouplingStyleProvider>
   );
 }

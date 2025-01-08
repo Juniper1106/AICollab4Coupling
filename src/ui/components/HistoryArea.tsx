@@ -9,6 +9,7 @@ import notifyAudioNewMessage from '@ui/assets/audio/new_message.mp3'
 import notifyAudioEditCanvas from '@ui/assets/audio/edit_canvas.mp3'
 import { NetworkMessages } from '@common/network/messages';
 import { useCouplingStyle } from '@ui/contexts/CouplingStyle';
+import { useProactiveInterval } from '@ui/contexts/ProactiveInterval';
 
 const { TextArea } = Input;
 
@@ -36,6 +37,8 @@ interface HistoryAreaProps {
 const App: React.FC<HistoryAreaProps> = ({actions, setNextAction}) => {
     const couplingStyle = useCouplingStyle();               // 读取全局 CouplingStyle 值
     const couplingStyleRef = useRef(couplingStyle);         // 用 useRef 保存 couplingStyle 的引用
+    const proactiveInterval = useProactiveInterval();
+    const proactiveIntervalRef = useRef(proactiveInterval);
 
     const [value, setValue] = useState('History');
     const [inputText, setInputText] = useState('');
@@ -48,8 +51,9 @@ const App: React.FC<HistoryAreaProps> = ({actions, setNextAction}) => {
     useEffect(() => {
         const intervalId = setInterval(async () => {
             // console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
-            if (Date.now() - lastUpdateTime >= 15000) {
-                console.log('已等待15秒，发送inactive_update请求');
+            // console.log(`proactiveInterval: ${proactiveIntervalRef.current}`);
+            if (Date.now() - lastUpdateTime >= proactiveIntervalRef.current) {
+                console.log('发送inactive_update请求');
                 const response = await fetch('http://127.0.0.1:5010/inactive_update')
                 const res = await response.json()
                 console.log(res)
@@ -129,6 +133,10 @@ const App: React.FC<HistoryAreaProps> = ({actions, setNextAction}) => {
     useEffect(() => {
         couplingStyleRef.current = couplingStyle;           // 每次 couplingStyle 更新时，同步到 ref
     }, [couplingStyle]);
+
+    useEffect(() => {
+        proactiveIntervalRef.current = proactiveInterval;           // 每次 couplingStyle 更新时，同步到 ref
+    }, [proactiveInterval]);
 
     useEffect(() => {
         // 连接后端并监听消息
