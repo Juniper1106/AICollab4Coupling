@@ -52,8 +52,8 @@ const App: React.FC<HistoryAreaProps> = ({actions, setNextAction}) => {
         const intervalId = setInterval(async () => {
             // console.log(`已等待 ${(Date.now() - lastUpdateTime)/1000} 秒无打字操作`);
             // console.log(`proactiveInterval: ${proactiveIntervalRef.current}`);
-            if (Date.now() - lastUpdateTime >= proactiveIntervalRef.current) {
-                console.log('发送inactive_update请求');
+            if (Date.now() - lastUpdateTime >= proactiveIntervalRef.current * 1000) {
+                console.log(`已等待${proactiveIntervalRef.current}秒，发送inactive_update请求`);
                 const response = await fetch('http://127.0.0.1:5010/inactive_update')
                 const res = await response.json()
                 console.log(res)
