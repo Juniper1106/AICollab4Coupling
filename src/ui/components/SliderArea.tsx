@@ -89,9 +89,9 @@ const SliderArea: React.FC = () => {
     }
     const frequencyMid = (fregencyMax + frequencyMin) / 2;
     const frequencyRange: SliderSingleProps['marks'] = {
-        [frequencyMin]: '低',
+        [frequencyMin]: '高',
         [frequencyMid]: '中',
-        [fregencyMax]: '高',
+        [fregencyMax]: '低',
     }
     return (
         <div className="sliderContainer">
